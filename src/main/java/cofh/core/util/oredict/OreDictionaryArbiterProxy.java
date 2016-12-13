@@ -2,7 +2,6 @@ package cofh.core.util.oredict;
 
 import cofh.lib.util.OreDictionaryProxy;
 import cofh.lib.util.helpers.ItemHelper;
-
 import net.minecraft.item.ItemStack;
 
 /**
@@ -25,9 +24,11 @@ public class OreDictionaryArbiterProxy extends OreDictionaryProxy {
 	}
 
 	@Override
-	public final int getOreID(ItemStack stack) {
+	public final int[] getOreID(ItemStack stack) {
 
-		return OreDictionaryArbiter.getOreID(stack);
+		int[] i = new int[0];
+		i[0] = OreDictionaryArbiter.getOreID(stack);
+		return i;
 	}
 
 	@Override
@@ -37,9 +38,10 @@ public class OreDictionaryArbiterProxy extends OreDictionaryProxy {
 	}
 
 	@Override
-	public final String getOreName(ItemStack stack) {
-
-		return OreDictionaryArbiter.getOreName(OreDictionaryArbiter.getOreID(stack));
+	public final String[] getOreName(ItemStack stack) {
+		String[] s = new String[0];
+		s[0] = OreDictionaryArbiter.getOreName(OreDictionaryArbiter.getOreID(stack));
+		return s;
 	}
 
 	@Override
@@ -49,13 +51,13 @@ public class OreDictionaryArbiterProxy extends OreDictionaryProxy {
 	}
 
 	@Override
-	public final boolean isOreIDEqual(ItemStack stack, int oreID) {
+	public final boolean isOreIDEqual(ItemStack stack, int[] oreID) {
 
-		return OreDictionaryArbiter.getOreID(stack) == oreID;
+		return new int[]{OreDictionaryArbiter.getOreID(stack)} == oreID;
 	}
 
 	@Override
-	public final boolean isOreNameEqual(ItemStack stack, String oreName) {
+	public final boolean isOreNameEqual(ItemStack stack, String[] oreName) {
 
 		return OreDictionaryArbiter.getOreName(OreDictionaryArbiter.getOreID(stack)).equals(oreName);
 	}

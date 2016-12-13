@@ -1,13 +1,17 @@
 package cofh.core.command;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import cofh.api.world.IFeatureGenerator;
 import cofh.core.world.FeatureParser;
 import cofh.core.world.WorldHandler;
+
 import com.google.common.base.Throwables;
-
-import java.util.List;
-
-import net.minecraft.command.ICommandSender;
 
 public class CommandReloadWorldgen implements ISubCommand {
 
@@ -26,7 +30,7 @@ public class CommandReloadWorldgen implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(ICommandSender sender, String[] args) {
+	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) {
 
 		for (IFeatureGenerator g : FeatureParser.parsedFeatures) {
 			WorldHandler.instance.removeFeature(g);
@@ -43,8 +47,7 @@ public class CommandReloadWorldgen implements ISubCommand {
 	}
 
 	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
-
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
 		return null;
 	}
 

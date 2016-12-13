@@ -1,12 +1,15 @@
 package cofh.core.command;
 
-import cofh.CoFHCore;
-import cofh.lib.util.helpers.StringHelper;
-
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import cofh.CoFHCore;
+import cofh.lib.util.helpers.StringHelper;
 
 public class CommandVersion implements ISubCommand {
 
@@ -26,13 +29,13 @@ public class CommandVersion implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(ICommandSender sender, String[] arguments) {
+	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] arguments) {
 
-		sender.addChatMessage(new ChatComponentText(StringHelper.localize("info.cofh.command.version.0") + " " + CoFHCore.version + "."));
+		sender.addChatMessage(new TextComponentString(StringHelper.localize("info.cofh.command.version.0") + " " + CoFHCore.version + "."));
 	}
 
 	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
 
 		return null;
 	}

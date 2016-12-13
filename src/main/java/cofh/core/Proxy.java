@@ -1,5 +1,25 @@
 package cofh.core;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.terraingen.SaplingGrowTreeEvent;
+import net.minecraftforge.event.world.WorldEvent.Save;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.oredict.OreDictionary.OreRegisterEvent;
 import cofh.core.chat.PacketIndexedChat;
 import cofh.core.key.CoFHKeyHandler;
 import cofh.core.key.KeyPacket;
@@ -12,27 +32,6 @@ import cofh.core.sided.IRunnableServer;
 import cofh.core.util.KeyBindingEmpower;
 import cofh.core.util.KeyBindingMultiMode;
 import cofh.core.util.oredict.OreDictionaryArbiter;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.Event.Result;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.terraingen.SaplingGrowTreeEvent;
-import net.minecraftforge.event.world.WorldEvent.Save;
-import net.minecraftforge.oredict.OreDictionary.OreRegisterEvent;
 
 public class Proxy {
 
@@ -69,7 +68,7 @@ public class Proxy {
 	@SubscribeEvent
 	public void save(Save evt) {
 
-		if (evt.world.provider.dimensionId == 0) {
+		if (evt.getWorld().provider.getDimension() == 0) {
 			RegistryEnderAttuned.save();
 		}
 	}
@@ -79,7 +78,7 @@ public class Proxy {
 		return 0;
 	}
 
-	public void addIndexedChatMessage(IChatComponent chat, int index) {
+	public void addIndexedChatMessage(ITextComponent chat, int index) {
 
 	}
 
@@ -87,23 +86,23 @@ public class Proxy {
 	@SubscribeEvent
 	public void onLivingDeathEvent(LivingDeathEvent event) {
 
-		if (!CoFHProps.enableLivingEntityDeathMessages || event.entity.worldObj.isRemote || !(event.entity instanceof EntityLiving)
-				|| !((EntityLiving) event.entityLiving).hasCustomNameTag()) {
+		if (!CoFHProps.enableLivingEntityDeathMessages || event.getEntity().worldObj.isRemote || !(event.getEntity() instanceof EntityLiving)
+				|| !((EntityLiving) event.getEntityLiving()).hasCustomName()) {
 			return;
 		}
-		((WorldServer) event.entity.worldObj).func_73046_m().getConfigurationManager().sendChatMsg(event.entityLiving.func_110142_aN().func_151521_b());
+		((WorldServer) event.getEntity().worldObj).getMinecraftServer().getPlayerList().sendChatMsg(event.getEntityLiving().getCombatTracker().getDeathMessage());
 	}
 
 	@SubscribeEvent
 	public void onOreRegisterEvent(OreRegisterEvent event) {
 
-		OreDictionaryArbiter.registerOreDictionaryEntry(event.Ore, event.Name);
+		OreDictionaryArbiter.registerOreDictionaryEntry(event.getOre(), event.getName());
 	}
 
 	@SubscribeEvent
 	public void onSaplingGrowTreeEvent(SaplingGrowTreeEvent event) {
 
-		if (CoFHProps.treeGrowthChance > 1 && event.world.rand.nextInt(CoFHProps.treeGrowthChance) != 0) {
+		if (CoFHProps.treeGrowthChance > 1 && event.getWorld().rand.nextInt(CoFHProps.treeGrowthChance) != 0) {
 			event.setResult(Result.DENY);
 		}
 	}
@@ -125,7 +124,7 @@ public class Proxy {
 
 		MinecraftServer theServer = FMLCommonHandler.instance().getMinecraftServerInstance();
 		playerName = playerName.trim();
-		for (String a : theServer.getConfigurationManager().func_152606_n()) {
+		for (String a : theServer.getPlayerList().getOppedPlayerNames()) {
 			if (playerName.equalsIgnoreCase(a)) {
 				return true; // TODO: this is completely horrible. needs improvement. will probably still be horrible.
 			}
@@ -159,7 +158,7 @@ public class Proxy {
 		return null;
 	}
 
-	public List<EntityPlayer> getPlayerList() {
+	public List<?> getPlayerList() {
 
 		List<EntityPlayer> result = new LinkedList<EntityPlayer>();
 		for (int i = 0; i < FMLCommonHandler.instance().getMinecraftServerInstance().worldServers.length; i++) {

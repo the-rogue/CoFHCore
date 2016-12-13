@@ -33,6 +33,7 @@ public class ItemShearsAdv extends ItemShears {
 		return this;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list) {
 

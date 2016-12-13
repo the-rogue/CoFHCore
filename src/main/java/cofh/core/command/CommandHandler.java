@@ -1,20 +1,23 @@
 package cofh.core.command;
 
-import cofh.asm.LoadingPlugin;
-import cofh.lib.util.helpers.StringHelper;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
-
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import cofh.asm.LoadingPlugin;
+import cofh.lib.util.helpers.StringHelper;
 
 public class CommandHandler extends CommandBase {
 
@@ -105,7 +108,7 @@ public class CommandHandler extends CommandBase {
 				}
 			}
 		}
-		CommandBase.func_152373_a(sender, dummy, info, data);
+		CommandBase.notifyCommandListener(sender, dummy, info, data);
 	}
 
 	@Override
@@ -115,8 +118,7 @@ public class CommandHandler extends CommandBase {
 	}
 
 	@Override
-	public List getCommandAliases() {
-
+	public List<String> getCommandAliases() {
 		return null;
 	}
 
@@ -125,15 +127,9 @@ public class CommandHandler extends CommandBase {
 
 		return "/" + getCommandName() + " help";
 	}
-
+	
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-
-		return true;
-	}
-
-	@Override
-	public void processCommand(ICommandSender sender, String[] arguments) {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] arguments) throws CommandException {
 
 		if (arguments.length < 1) {
 			arguments = new String[] { "help" };
@@ -141,7 +137,7 @@ public class CommandHandler extends CommandBase {
 		ISubCommand command = commands.get(arguments[0]);
 		if (command != null) {
 			if (canUseCommand(sender, command.getPermissionLevel(), command.getCommandName())) {
-				command.handleCommand(sender, arguments);
+				command.handleCommand(server, sender, arguments);
 				return;
 			}
 			throw new CommandException("commands.generic.permission");
@@ -150,12 +146,12 @@ public class CommandHandler extends CommandBase {
 	}
 
 	@Override
-	public List addTabCompletionOptions(ICommandSender par1ICommandSender, String[] par2ArrayOfStr) {
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender par1ICommandSender, String[] par2ArrayOfStr, @Nullable BlockPos pos) {
 
 		if (par2ArrayOfStr.length == 1) {
-			return getListOfStringsFromIterableMatchingLastWord(par2ArrayOfStr, commands.keySet());
+			return getListOfStringsMatchingLastWord(par2ArrayOfStr, commands.keySet());
 		} else if (commands.containsKey(par2ArrayOfStr[0])) {
-			return commands.get(par2ArrayOfStr[0]).addTabCompletionOptions(par1ICommandSender, par2ArrayOfStr);
+			return commands.get(par2ArrayOfStr[0]).getTabCompletionOptions(server, par1ICommandSender, par2ArrayOfStr, pos);
 		}
 		return null;
 	}
@@ -190,9 +186,8 @@ public class CommandHandler extends CommandBase {
 		}
 
 		@Override
-		public void processCommand(ICommandSender p_71515_1_, String[] p_71515_2_) {
-
+		public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+		{
 		}
-
 	}
 }

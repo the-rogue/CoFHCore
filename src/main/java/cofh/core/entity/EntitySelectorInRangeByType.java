@@ -1,9 +1,10 @@
 package cofh.core.entity;
 
-import net.minecraft.command.IEntitySelector;
+import net.minecraft.command.EntitySelector;
 import net.minecraft.entity.Entity;
 
-public class EntitySelectorInRangeByType implements IEntitySelector {
+@Deprecated
+public class EntitySelectorInRangeByType extends EntitySelector {
 
 	private final double origX;
 	private final double origY;
@@ -25,7 +26,6 @@ public class EntitySelectorInRangeByType implements IEntitySelector {
 		this.types = types;
 	}
 
-	@Override
 	public boolean isEntityApplicable(Entity entity) {
 
 		// Out of range? Not applicable.

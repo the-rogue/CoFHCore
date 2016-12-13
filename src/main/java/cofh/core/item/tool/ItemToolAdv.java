@@ -1,7 +1,6 @@
 package cofh.core.item.tool;
 
 import cofh.lib.util.helpers.ItemHelper;
-
 import gnu.trove.set.hash.THashSet;
 import gnu.trove.set.hash.TLinkedHashSet;
 
@@ -57,6 +56,7 @@ public abstract class ItemToolAdv extends ItemTool {
 		return this;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list) {
 

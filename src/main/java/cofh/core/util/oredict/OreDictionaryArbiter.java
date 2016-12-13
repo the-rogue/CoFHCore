@@ -1,18 +1,19 @@
 package cofh.core.util.oredict;
 
-import cofh.lib.util.ItemWrapper;
-import cofh.lib.util.helpers.ItemHelper;
-import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
+import cofh.lib.util.ItemWrapper;
+import cofh.lib.util.helpers.ItemHelper;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 /**
  * This class exists to optimize OreDictionary functionality, as it is embarrassingly slow otherwise.
@@ -51,7 +52,7 @@ public class OreDictionaryArbiter {
 		oreNames = OreDictionary.getOreNames();
 
 		for (int i = 0; i < oreNames.length; i++) {
-			ArrayList<ItemStack> ores = OreDictionary.getOres(oreNames[i]);
+			List<ItemStack> ores = OreDictionary.getOres(oreNames[i]);
 
 			for (int j = 0; j < ores.size(); j++) {
 				registerOreDictionaryEntry(ores.get(j), oreNames[i]);

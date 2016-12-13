@@ -1,37 +1,35 @@
 package cofh.core.item;
 
-import cofh.core.render.CoFHFontRenderer;
-import cofh.lib.util.helpers.ItemHelper;
-import cofh.lib.util.helpers.SecurityHelper;
-import cofh.lib.util.helpers.StringHelper;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
+import cofh.core.render.CoFHFontRenderer;
+import cofh.lib.util.helpers.ItemHelper;
+import cofh.lib.util.helpers.SecurityHelper;
 
 public class ItemBase extends Item {
 
 	public class ItemEntry {
 
 		public String name;
-		public IIcon icon;
 		public int rarity = 0;
 		public int maxDamage = 0;
 		public boolean altName = false;
@@ -84,55 +82,54 @@ public class ItemBase extends Item {
 		return this;
 	}
 
-	public ItemStack addItem(int number, ItemEntry entry, boolean register) {
+	public boolean addItem(int number, ItemEntry entry, boolean register) {
 
 		if (itemMap.containsKey(Integer.valueOf(number))) {
-			return null;
+			return false;
 		}
 		itemMap.put(Integer.valueOf(number), entry);
 		itemList.add(Integer.valueOf(number));
-
-		ItemStack item = new ItemStack(this, 1, number);
 		if (register) {
-			GameRegistry.registerCustomItemStack(entry.name, item);
+			GameRegistry.register(this, new ResourceLocation(entry.name));
 		}
-		return item;
+		return true;
 	}
 
-	public ItemStack addItem(int number, ItemEntry entry) {
+	public boolean addItem(int number, ItemEntry entry) {
 
 		return addItem(number, entry, true);
 	}
 
-	public ItemStack addItem(int number, String name, int rarity, boolean register) {
+	public boolean addItem(int number, String name, int rarity, boolean register) {
 
 		return addItem(number, new ItemEntry(name, rarity), register);
 	}
 
-	public ItemStack addItem(int number, String name, int rarity) {
+	public boolean addItem(int number, String name, int rarity) {
 
 		return addItem(number, name, rarity, true);
 	}
 
-	public ItemStack addItem(int number, String name) {
+	public boolean addItem(int number, String name) {
 
 		return addItem(number, name, 0);
 	}
 
-	public ItemStack addOreDictItem(int number, String name, int rarity) {
-
-		ItemStack stack = addItem(number, name, rarity);
+	public boolean addOreDictItem(int number, String name, int rarity) {
+		boolean registered = addItem(number, name, rarity);
+		ItemStack stack = new ItemStack(this, 0, number);
 		OreDictionary.registerOre(name, stack);
 
-		return stack;
+		return registered;
 	}
 
-	public ItemStack addOreDictItem(int number, String name) {
+	public boolean addOreDictItem(int number, String name) {
 
-		ItemStack stack = addItem(number, name);
+		boolean registered = addItem(number, name);
+		ItemStack stack =  new ItemStack(this, 0, number);
 		OreDictionary.registerOre(name, stack);
 
-		return stack;
+		return registered;
 	}
 
 	public String getRawName(ItemStack stack) {
@@ -145,24 +142,16 @@ public class ItemBase extends Item {
 	}
 
 	@Override
-	public IIcon getIconFromDamage(int i) {
-
-		if (!itemMap.containsKey(i)) {
-			return null;
-		}
-		return itemMap.get(i).icon;
-	}
-
-	@Override
 	public EnumRarity getRarity(ItemStack stack) {
 
 		int i = stack.getItemDamage();
 		if (!itemMap.containsKey(Integer.valueOf(i))) {
-			return EnumRarity.common;
+			return EnumRarity.COMMON;
 		}
 		return EnumRarity.values()[itemMap.get(stack.getItemDamage()).rarity];
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list) {
 
@@ -183,7 +172,7 @@ public class ItemBase extends Item {
 		if (item.altName) {
 			return new StringBuilder().append(getUnlocalizedName()).append('.').append(item.name).append("Alt").toString();
 		}
-		return new StringBuilder().append(getUnlocalizedName()).append('.').append(item.name).toString();
+		return new StringBuilder().append("item.").append(getUnlocalizedName()).append('.').append(item.name).toString();
 	}
 
 	@Override
@@ -196,8 +185,7 @@ public class ItemBase extends Item {
 	public Entity createEntity(World world, Entity location, ItemStack stack) {
 
 		if (SecurityHelper.isSecure(stack)) {
-			location.invulnerable = true;
-			location.isImmuneToFire = true;
+			location.setEntityInvulnerable(true);
 			((EntityItem) location).lifespan = Integer.MAX_VALUE;
 		}
 		return null;
@@ -206,33 +194,17 @@ public class ItemBase extends Item {
 	@Override
 	public Item setUnlocalizedName(String name) {
 
-		GameRegistry.registerItem(this, name);
-		name = modName + "." + name;
+		GameRegistry.register(this);
+		name = modName + ":" + name;
 		return super.setUnlocalizedName(name);
 	}
 
-	public Item setUnlocalizedName(String textureName, String registrationName) {
-
-		GameRegistry.registerItem(this, registrationName);
-		textureName = modName + "." + textureName;
-		return super.setUnlocalizedName(textureName);
-	}
-
-	@Override
-	public void registerIcons(IIconRegister ir) {
+	public void registertexture() {
 
 		if (!hasTextures) {
 			return;
 		}
-		for (int i = 0; i < itemList.size(); i++) {
-			ItemEntry item = itemMap.get(itemList.get(i));
-			item.icon = registerIcon(ir, item);
-		}
-	}
-
-	protected IIcon registerIcon(IIconRegister ir, ItemEntry item) {
-
-		return ir.registerIcon(modName + ":" + getUnlocalizedName().replace("item." + modName + ".", "") + "/" + StringHelper.titleCase(item.name));
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
 	}
 
 	@Override

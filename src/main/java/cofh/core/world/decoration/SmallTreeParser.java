@@ -1,12 +1,5 @@
 package cofh.core.world.decoration;
 
-import cofh.api.world.IGeneratorParser;
-import cofh.core.world.FeatureParser;
-import cofh.lib.util.WeightedRandomBlock;
-import cofh.lib.world.WorldGenSmallTree;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +7,14 @@ import net.minecraft.init.Blocks;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import org.apache.logging.log4j.Logger;
+
+import cofh.api.world.IGeneratorParser;
+import cofh.core.world.FeatureParser;
+import cofh.lib.util.WeightedRandomBlock;
+import cofh.lib.world.WorldGenSmallTree;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class SmallTreeParser implements IGeneratorParser {
 
@@ -28,7 +29,7 @@ public class SmallTreeParser implements IGeneratorParser {
 			if (!entry.isJsonNull() && !FeatureParser.parseResList(entry, blocks, false)) {
 				log.warn("Entry specifies invalid genMaterial for 'smalltree' generator! Using air!");
 				blocks.clear();
-				blocks.add(new WeightedRandomBlock(Blocks.air));
+				blocks.add(new WeightedRandomBlock(Blocks.AIR));
 			}
 		} else {
 			log.info("Entry does not specify genMaterial for 'smalltree' generator! There are no restrictions!");

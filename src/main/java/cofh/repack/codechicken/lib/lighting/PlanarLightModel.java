@@ -2,42 +2,38 @@ package cofh.repack.codechicken.lib.lighting;
 
 import cofh.repack.codechicken.lib.colour.ColourRGBA;
 import cofh.repack.codechicken.lib.render.CCRenderState;
+import cofh.repack.codechicken.lib.render.pipeline.IVertexOperation;
 
 /**
  * Faster precomputed version of LightModel that only works for axis planar sides
  */
-public class PlanarLightModel implements CCRenderState.IVertexOperation {
+public class PlanarLightModel implements IVertexOperation {
+    public static PlanarLightModel standardLightModel = LightModel.standardLightModel.reducePlanar();
 
-	public static PlanarLightModel standardLightModel = LightModel.standardLightModel.reducePlanar();
+    public int[] colours;
 
-	public int[] colours;
+    public PlanarLightModel(int[] colours) {
+        this.colours = colours;
+    }
 
-	public PlanarLightModel(int[] colours) {
+    @Override
+    public boolean load(CCRenderState state) {
+        if (!state.computeLighting) {
+            return false;
+        }
 
-		this.colours = colours;
-	}
+        state.pipeline.addDependency(state.sideAttrib);
+        state.pipeline.addDependency(state.colourAttrib);
+        return true;
+    }
 
-	@Override
-	public boolean load() {
+    @Override
+    public void operate(CCRenderState state) {
+        state.colour = ColourRGBA.multiply(state.colour, colours[state.side]);
+    }
 
-		if (!CCRenderState.computeLighting) {
-			return false;
-		}
-
-		CCRenderState.pipeline.addDependency(CCRenderState.sideAttrib);
-		CCRenderState.pipeline.addDependency(CCRenderState.colourAttrib);
-		return true;
-	}
-
-	@Override
-	public void operate() {
-
-		CCRenderState.setColour(ColourRGBA.multiply(CCRenderState.colour, colours[CCRenderState.side]));
-	}
-
-	@Override
-	public int operationID() {
-
-		return LightModel.operationIndex;
-	}
+    @Override
+    public int operationID() {
+        return LightModel.operationIndex;
+    }
 }

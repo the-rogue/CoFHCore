@@ -2,7 +2,9 @@ package cofh.core.particles;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+
 import java.util.Random;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -160,6 +162,7 @@ public abstract class ParticleBase {
 	}
 
 
+	@SuppressWarnings("unchecked")
 	public <T extends ParticleBase> T setColor(float r, float g, float b) {
 		this.r = r;
 		this.g = g;
@@ -167,6 +170,7 @@ public abstract class ParticleBase {
 		return (T) this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T extends ParticleBase> T setColor(int color) {
 		this.r = (float) ((color & 16711680) >> 16) / 255.0F;
 		this.g = (float) ((color & 65280) >> 8) / 255.0F;
@@ -174,11 +178,13 @@ public abstract class ParticleBase {
 		return (T) this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T extends ParticleBase> T setAlpha(float a) {
 		this.a = a;
 		return (T) this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T extends ParticleBase> T setSize(float size) {
 		this.size = 0.1F * size;
 		return (T) this;

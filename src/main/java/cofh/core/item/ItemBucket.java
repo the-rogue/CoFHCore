@@ -1,25 +1,22 @@
 package cofh.core.item;
 
-import cofh.core.util.fluid.BucketHandler;
-import cofh.lib.render.IFluidOverlayItem;
-import cofh.lib.util.RegistryUtils;
-import cofh.lib.util.helpers.StringHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import cofh.core.util.fluid.BucketHandler;
+import cofh.lib.render.IFluidOverlayItem;
+import cofh.lib.util.RegistryUtils;
+import cofh.lib.util.helpers.StringHelper;
+import cofh.repack.codechicken.lib.texture.TextureUtils.IIconRegister;
 
 public class ItemBucket extends ItemBase implements IFluidOverlayItem {
 
-	Item container = Items.bucket;
+	Item container = Items.BUCKET;
 
 	public ItemBucket() {
 
@@ -92,9 +89,9 @@ public class ItemBucket extends ItemBase implements IFluidOverlayItem {
 	@Override
 	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
 
-		MovingObjectPosition pos = this.getMovingObjectPositionFromPlayer(world, player, false);
+		RayTraceResult pos = this.getMovingObjectPositionFromPlayer(world, player, false);
 
-		if (pos == null || pos.typeOfHit != MovingObjectType.BLOCK) {
+		if (pos == null || pos.typeOfHit != RayTraceResult.Type.BLOCK) {
 			return stack;
 		}
 		int x = pos.blockX;

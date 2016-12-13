@@ -1,5 +1,35 @@
 package cofh.core.world;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map.Entry;
+
+import net.minecraft.block.Block;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.biome.Biome.TempCategory;
+import net.minecraft.world.gen.feature.WorldGenerator;
+import net.minecraftforge.common.BiomeDictionary.Type;
+import net.minecraftforge.common.DungeonHooks.DungeonMob;
+import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.oredict.OreDictionary;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cofh.api.world.IFeatureGenerator;
 import cofh.api.world.IFeatureParser;
 import cofh.api.world.IGeneratorParser;
@@ -30,39 +60,11 @@ import cofh.lib.util.helpers.MathHelper;
 import cofh.lib.world.biome.BiomeInfo;
 import cofh.lib.world.biome.BiomeInfoRarity;
 import cofh.lib.world.biome.BiomeInfoSet;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import cpw.mods.fml.common.registry.GameData;
-import cpw.mods.fml.common.registry.GameRegistry;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map.Entry;
-
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTException;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.biome.BiomeGenBase.TempCategory;
-import net.minecraft.world.gen.feature.WorldGenerator;
-import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.common.DungeonHooks.DungeonMob;
-import net.minecraftforge.oredict.OreDictionary;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class FeatureParser {
 
@@ -381,6 +383,7 @@ public class FeatureParser {
 		return set;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static Block parseBlockName(String blockRaw) {
 
 		String[] blockTokens = blockRaw.split(":", 2);
@@ -454,7 +457,7 @@ public class FeatureParser {
 			NBTTagCompound data;
 			if (genObject.has("spawnerTag")) {
 				try {
-					data = (NBTTagCompound) JsonToNBT.func_150315_a(genObject.get("spawnerTag").toString());
+					data = (NBTTagCompound) JsonToNBT.getTagFromJson(genObject.get("spawnerTag").toString());
 				} catch (NBTException e) {
 					log.error("Invalid entity entry!", e);
 					return null;
@@ -552,6 +555,7 @@ public class FeatureParser {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static WeightedRandomItemStack parseWeightedRandomItem(JsonElement genElement) {
 
 		if (genElement.isJsonNull()) {
@@ -561,7 +565,7 @@ public class FeatureParser {
 		ItemStack stack;
 
 		if (genElement.isJsonPrimitive()) {
-			stack = new ItemStack(GameData.getItemRegistry().getObject(genElement.getAsString()), 1, metadata);
+			stack = new ItemStack(GameData.getItemRegistry().getObject(new ResourceLocation(genElement.getAsString())), 1, metadata);
 		} else {
 			JsonObject item = genElement.getAsJsonObject();
 
@@ -592,11 +596,11 @@ public class FeatureParser {
 				if (!item.has("name")) {
 					log.error("Item entry missing valid name or oreName!");
 				}
-				stack = new ItemStack(GameData.getItemRegistry().getObject(item.get("name").getAsString()), stackSize, metadata);
+				stack = new ItemStack(GameData.getItemRegistry().getObject(new ResourceLocation(item.get("name").getAsString())), stackSize, metadata);
 			}
 			if (item.has("nbt")) {
 				try {
-					NBTBase nbtbase = JsonToNBT.func_150315_a(item.get("nbt").getAsString());
+					NBTBase nbtbase = JsonToNBT.getTagFromJson(item.get("nbt").getAsString());
 
 					if (!(nbtbase instanceof NBTTagCompound)) {
 						log.error("Item has invalid NBT data.");

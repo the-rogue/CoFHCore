@@ -1,14 +1,5 @@
 package cofh.core.world.feature;
 
-import cofh.core.world.FeatureParser;
-import cofh.lib.util.WeightedRandomBlock;
-import cofh.lib.world.feature.FeatureBase;
-import cofh.lib.world.feature.FeatureBase.GenRestriction;
-import cofh.lib.world.feature.FeatureGenUnderfluid;
-import com.google.gson.JsonObject;
-
-import gnu.trove.set.hash.TIntHashSet;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +11,14 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 
 import org.apache.logging.log4j.Logger;
+
+import cofh.core.world.FeatureParser;
+import cofh.lib.util.WeightedRandomBlock;
+import cofh.lib.world.feature.FeatureBase;
+import cofh.lib.world.feature.FeatureBase.GenRestriction;
+import cofh.lib.world.feature.FeatureGenUnderfluid;
+
+import com.google.gson.JsonObject;
 
 public class UnderfluidParser extends UniformParser {
 
@@ -33,7 +32,7 @@ public class UnderfluidParser extends UniformParser {
 	@Override
 	protected List<WeightedRandomBlock> generateDefaultMaterial() {
 
-		return Arrays.asList(new WeightedRandomBlock(Blocks.dirt, -1), new WeightedRandomBlock(Blocks.grass, -1));
+		return Arrays.asList(new WeightedRandomBlock(Blocks.DIRT, -1), new WeightedRandomBlock(Blocks.GRASS, -1));
 	}
 
 	@Override
@@ -41,23 +40,23 @@ public class UnderfluidParser extends UniformParser {
 			GenRestriction biomeRes, boolean retrogen, GenRestriction dimRes, Logger log) {
 
 		boolean water = true;
-		int[] fluidList = null;
+		String[] fluidList = null;
 		l: if (genObject.has("genFluid")) {
 			ArrayList<DungeonMob> list = new ArrayList<DungeonMob>();
 			if (!FeatureParser.parseWeightedStringList(genObject.get("genFluid"), list)) {
 				break l;
 			}
 			water = false;
-			TIntHashSet ints = new TIntHashSet();
+			ArrayList<String> ints = new ArrayList<String>();
 			for (DungeonMob str : list) {
 				// ints.add(FluidRegistry.getFluidID(str.type));
 				// NOPE. this NPEs.
 				Fluid fluid = FluidRegistry.getFluid(str.type);
 				if (fluid != null) {
-					ints.add(fluid.getID());
+					ints.add(fluid.getName());
 				}
 			}
-			fluidList = ints.toArray();
+			fluidList = (String[]) ints.toArray();
 		}
 		if (water) {
 			return new FeatureGenUnderfluid(featureName, gen, matList, numClusters, biomeRes, retrogen, dimRes);

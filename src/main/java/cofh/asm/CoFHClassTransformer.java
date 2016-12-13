@@ -1,10 +1,10 @@
 package cofh.asm;
 
-import static cofh.asm.ASMCore.*;
-
-import cpw.mods.fml.common.discovery.ASMDataTable;
-
+import static cofh.asm.ASMCore.hashes;
+import static cofh.asm.ASMCore.parsables;
+import static cofh.asm.ASMCore.parse;
 import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
 
 public class CoFHClassTransformer implements IClassTransformer {
 

@@ -1,12 +1,11 @@
 package cofh.core.network;
 
-import cofh.CoFHCore;
-import cofh.core.RegistrySocial;
-
 import java.util.LinkedList;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import cofh.CoFHCore;
+import cofh.core.RegistrySocial;
 
 public class PacketSocial extends PacketCoFHBase {
 

@@ -1,5 +1,17 @@
 package cofh.core.block;
 
+import java.util.UUID;
+
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IContainerListener;
+import net.minecraft.network.Packet;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
+import net.minecraftforge.fml.relauncher.Side;
 import cofh.api.tileentity.ISecurable;
 import cofh.api.tileentity.ISecurable.AccessMode;
 import cofh.core.CoFHProps;
@@ -10,18 +22,8 @@ import cofh.core.network.PacketTile;
 import cofh.core.util.CoreUtils;
 import cofh.lib.util.helpers.SecurityHelper;
 import cofh.lib.util.helpers.ServerHelper;
+
 import com.mojang.authlib.GameProfile;
-import cpw.mods.fml.relauncher.Side;
-
-import java.util.UUID;
-
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.ICrafting;
-import net.minecraft.network.Packet;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.EnumSkyBlock;
 
 public abstract class TileCoFHBase extends TileEntity {
 
@@ -52,28 +54,28 @@ public abstract class TileCoFHBase extends TileEntity {
 
 	public void markChunkDirty() {
 
-		worldObj.markTileEntityChunkModified(this.xCoord, this.yCoord, this.zCoord, this);
+		worldObj.getChunkFromBlockCoords(this.pos).setModified(true);
 	}
 
-	public void callNeighborBlockChange() {
+	public void callNeighborStateChange() {
 
-		worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, getBlockType());
+		worldObj.notifyNeighborsOfStateChange(this.pos, getBlockType());
 	}
 
 	public void callNeighborTileChange() {
 
-		worldObj.func_147453_f(this.xCoord, this.yCoord, this.zCoord, this.getBlockType());
+		worldObj.updateComparatorOutputLevel(this.pos, this.getBlockType());
 	}
 
 	public void onNeighborBlockChange() {
 
 	}
 
-	public void onNeighborTileChange(int tileX, int tileY, int tileZ) {
+	public void onNeighborTileChange(BlockPos pos) {
 
 	}
 
-	public int getComparatorInput(int side) {
+	public int getComparatorInput(IBlockState blockstate) {
 
 		return 0;
 	}
@@ -89,7 +91,7 @@ public abstract class TileCoFHBase extends TileEntity {
 			return true;
 		}
 		AccessMode access = ((ISecurable) this).getAccess();
-		String name = player.getCommandSenderName();
+		String name = player.getName();
 		if (access.isPublic() || (CoFHProps.enableOpSecureAccess && CoreUtils.isOp(name))) {
 			return true;
 		}
@@ -114,7 +116,7 @@ public abstract class TileCoFHBase extends TileEntity {
 
 	public boolean isUseable(EntityPlayer player) {
 
-		return player.getDistanceSq(xCoord, yCoord, zCoord) <= 64D && worldObj.getTileEntity(xCoord, yCoord, zCoord) == this;
+		return player.getDistanceSq(pos) <= 64D && worldObj.getTileEntity(pos) == this;
 	}
 
 	public boolean onWrench(EntityPlayer player, int hitSide) {
@@ -133,8 +135,7 @@ public abstract class TileCoFHBase extends TileEntity {
 	}
 
 	/* NETWORK METHODS */
-	@Override
-	public Packet getDescriptionPacket() {
+	public Packet<?> getDescriptionPacket() {
 
 		return PacketHandler.toMCPacket(getPacket());
 	}
@@ -149,11 +150,11 @@ public abstract class TileCoFHBase extends TileEntity {
 		PacketHandler.sendToAllAround(getPacket(), this);
 	}
 
-	protected void updateLighting() {
+	protected void updateLighting(IBlockState state) {
 
-		int light2 = worldObj.getSavedLightValue(EnumSkyBlock.Block, xCoord, yCoord, zCoord), light1 = getLightValue();
-		if (light1 != light2 && worldObj.updateLightByType(EnumSkyBlock.Block, xCoord, yCoord, zCoord)) {
-			worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+		int light2 = state.getLightValue(worldObj, pos), light1 = getLightValue();
+		if (light1 != light2 && worldObj.checkLightFor(EnumSkyBlock.BLOCK, pos)) {
+			worldObj.setBlockState(pos, state);
 		}
 	}
 
@@ -194,7 +195,7 @@ public abstract class TileCoFHBase extends TileEntity {
 
 	}
 
-	public void sendGuiNetworkData(Container container, ICrafting player) {
+	public void sendGuiNetworkData(Container container, IContainerListener player) {
 
 	}
 

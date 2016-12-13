@@ -4,8 +4,8 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
 import net.minecraft.world.storage.ISaveHandler;
+import net.minecraft.world.storage.WorldInfo;
 
 /**
  * Do not extend this class directly, extend WorldServerProxy instead. <br>
@@ -13,10 +13,9 @@ import net.minecraft.world.storage.ISaveHandler;
  */
 public abstract class WorldServerShim extends WorldServer {
 
-	public WorldServerShim(MinecraftServer minecraftServer, ISaveHandler saveHandler, String par2String, WorldProvider provider,
-			WorldSettings par4WorldSettings, Profiler theProfiler) {
+	public WorldServerShim(MinecraftServer minecraftServer, ISaveHandler saveHandler, WorldInfo info, WorldProvider provider, Profiler theProfiler) {
 
-		super(minecraftServer, saveHandler, par2String, provider.dimensionId, par4WorldSettings, theProfiler);
+		super(minecraftServer, saveHandler, info, provider.getDimension(), theProfiler);
 		throw new IllegalAccessError("WorldServerShim cannot be extended. Extend WorldServerProxy instead.");
 	}
 

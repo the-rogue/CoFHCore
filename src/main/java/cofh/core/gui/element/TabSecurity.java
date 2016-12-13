@@ -10,6 +10,8 @@ import cofh.lib.util.helpers.StringHelper;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.util.SoundCategory;
+
 import org.lwjgl.opengl.GL11;
 
 public class TabSecurity extends TabBase {
@@ -97,17 +99,17 @@ public class TabSecurity extends TabBase {
 		if (28 <= mouseX && mouseX < 44 && 20 <= mouseY && mouseY < 36) {
 			if (!myContainer.getAccess().isPublic()) {
 				myContainer.setAccess(ISecurable.AccessMode.PUBLIC);
-				GuiBase.playSound("random.click", 1.0F, 0.4F);
+				GuiBase.playSound("random.click", 1.0F, 0.4F, SoundCategory.MASTER);
 			}
 		} else if (48 <= mouseX && mouseX < 64 && 20 <= mouseY && mouseY < 36) {
 			if (!myContainer.getAccess().isRestricted()) {
 				myContainer.setAccess(ISecurable.AccessMode.RESTRICTED);
-				GuiBase.playSound("random.click", 1.0F, 0.6F);
+				GuiBase.playSound("random.click", 1.0F, 0.6F, SoundCategory.MASTER);
 			}
 		} else if (68 <= mouseX && mouseX < 84 && 20 <= mouseY && mouseY < 36) {
 			if (!myContainer.getAccess().isPrivate()) {
 				myContainer.setAccess(ISecurable.AccessMode.PRIVATE);
-				GuiBase.playSound("random.click", 1.0F, 0.8F);
+				GuiBase.playSound("random.click", 1.0F, 0.8F, SoundCategory.MASTER);
 			}
 		}
 		return true;

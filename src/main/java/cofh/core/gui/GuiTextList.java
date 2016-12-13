@@ -1,13 +1,13 @@
 package cofh.core.gui;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiTextList extends Gui {
@@ -37,7 +37,7 @@ public class GuiTextList extends Gui {
 	public int displayLines = 0;
 	public int lineHeight = 10;
 
-	public List<String> textLines = new LinkedList<String>();
+	public List<ITextComponent> textLines = new LinkedList<ITextComponent>();
 	public int startLine = 0;
 	public int selectedLine = -1;
 
@@ -69,7 +69,7 @@ public class GuiTextList extends Gui {
 
 		for (int i = startLine; i < startLine + displayLines; i++) {
 			if (textLines.size() > i) {
-				String lineToDraw = fRend.trimStringToWidth(textLines.get(i), width);
+				String lineToDraw = fRend.trimStringToWidth(textLines.get(i).getFormattedText(), width);
 				if (selectedLine == i && highlightSelectedLine) {
 					drawRect(xPos, yPos + 1 + lineHeight * (i - startLine), xPos + width, yPos + lineHeight * (1 + i - startLine), selectedLineColor);
 					fRend.drawStringWithShadow(lineToDraw, xPos + X_OFFSET, yPos + Y_OFFSET + lineHeight * (i - startLine), selectedTextColor);
@@ -92,7 +92,7 @@ public class GuiTextList extends Gui {
 
 		int theLine = (mouseY - offsetY) / lineHeight;
 		if (textLines.size() > theLine + startLine) {
-			return textLines.get(theLine + startLine);
+			return textLines.get(theLine + startLine).getFormattedText();
 		}
 		return "";
 	}
@@ -107,7 +107,7 @@ public class GuiTextList extends Gui {
 		isFocused = focus;
 	}
 
-	public void addLine(String theLine) {
+	public void addLine(ITextComponent theLine) {
 
 		textLines.add(theLine);
 	}

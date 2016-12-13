@@ -1,12 +1,5 @@
 package cofh.core.world;
 
-import cofh.CoFHCore;
-import cofh.lib.util.position.ChunkCoord;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.gameevent.TickEvent.WorldTickEvent;
-import cpw.mods.fml.relauncher.Side;
-
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.hash.THashSet;
 
@@ -15,6 +8,12 @@ import java.util.Random;
 
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import cofh.CoFHCore;
+import cofh.lib.util.position.ChunkCoord;
 
 public class TickHandlerWorld {
 
@@ -34,7 +33,7 @@ public class TickHandlerWorld {
 			return;
 		}
 		World world = event.world;
-		int dim = world.provider.dimensionId;
+		int dim = world.provider.getDimension();
 
 		if (event.phase == Phase.END) {
 			ArrayDeque<RetroChunkCoord> chunks = chunksToGen.get(dim);

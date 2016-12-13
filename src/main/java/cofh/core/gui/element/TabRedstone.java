@@ -9,6 +9,8 @@ import cofh.lib.util.helpers.StringHelper;
 
 import java.util.List;
 
+import net.minecraft.util.SoundCategory;
+
 import org.lwjgl.opengl.GL11;
 
 public class TabRedstone extends TabBase {
@@ -96,17 +98,17 @@ public class TabRedstone extends TabBase {
 		if (28 <= mouseX && mouseX < 44 && 20 <= mouseY && mouseY < 36) {
 			if (!myContainer.getControl().isDisabled()) {
 				myContainer.setControl(IRedstoneControl.ControlMode.DISABLED);
-				GuiBase.playSound("random.click", 1.0F, 0.4F);
+				GuiBase.playSound("random.click", 1.0F, 0.4F, SoundCategory.MASTER);
 			}
 		} else if (48 <= mouseX && mouseX < 64 && 20 <= mouseY && mouseY < 36) {
 			if (!myContainer.getControl().isLow()) {
 				myContainer.setControl(IRedstoneControl.ControlMode.LOW);
-				GuiBase.playSound("random.click", 1.0F, 0.6F);
+				GuiBase.playSound("random.click", 1.0F, 0.6F, SoundCategory.MASTER);
 			}
 		} else if (68 <= mouseX && mouseX < 84 && 20 <= mouseY && mouseY < 36) {
 			if (!myContainer.getControl().isHigh()) {
 				myContainer.setControl(IRedstoneControl.ControlMode.HIGH);
-				GuiBase.playSound("random.click", 1.0F, 0.8F);
+				GuiBase.playSound("random.click", 1.0F, 0.8F, SoundCategory.MASTER);
 			}
 		}
 		return true;

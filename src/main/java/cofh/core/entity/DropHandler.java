@@ -1,18 +1,18 @@
 package cofh.core.entity;
 
-import cofh.lib.util.helpers.MathHelper;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.monster.SkeletonType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import cofh.lib.util.helpers.MathHelper;
 
 public class DropHandler {
 
@@ -20,43 +20,40 @@ public class DropHandler {
 
 	@SubscribeEvent
 	public void onLivingDrops(LivingDropsEvent event) {
-
-		if (event.specialDropValue < 5) {
-			return;
-		}
+		
 		int randPerc = MathHelper.RANDOM.nextInt(100);
 		ItemStack itemSkull = null;
 
-		if (event.entity instanceof EntityPlayerMP) {
-			if (event.recentlyHit || !playerPvPOnly) {
+		if (event.getEntity() instanceof EntityPlayerMP) {
+			if (event.isRecentlyHit() || !playerPvPOnly) {
 				if (playersEnabled && randPerc < playerChance) {
-					EntityPlayer thePlayer = (EntityPlayerMP) event.entity;
-					itemSkull = new ItemStack(Items.skull, 1, 3);
-					itemSkull.stackTagCompound = new NBTTagCompound();
-					itemSkull.stackTagCompound.setString("SkullOwner", thePlayer.getCommandSenderName());
+					EntityPlayer thePlayer = (EntityPlayerMP) event.getEntity();
+					itemSkull = new ItemStack(Items.SKULL, 1, 3);
+					itemSkull.setTagCompound(new NBTTagCompound());
+					itemSkull.getTagCompound().setString("SkullOwner", thePlayer.getName());
 				}
 			}
-		} else if (event.recentlyHit || !mobPvEOnly) {
-			if (event.entity instanceof EntitySkeleton) {
-				EntitySkeleton theEntity = (EntitySkeleton) event.entity;
+		} else if (event.isRecentlyHit() || !mobPvEOnly) {
+			if (event.getEntity() instanceof EntitySkeleton) {
+				EntitySkeleton theEntity = (EntitySkeleton) event.getEntity();
 
-				if (theEntity.getSkeletonType() == 0 && skeletonEnabled && randPerc < skeletonChance) {
-					itemSkull = new ItemStack(Items.skull, 1, 0);
-				} else if (theEntity.getSkeletonType() == 1 && witherSkeletonEnabled && randPerc < witherSkeletonChance) {
-					itemSkull = new ItemStack(Items.skull, 1, 1);
+				if (theEntity.func_189771_df() == SkeletonType.NORMAL && skeletonEnabled && randPerc < skeletonChance) {
+					itemSkull = new ItemStack(Items.SKULL, 1, 0);
+				} else if (theEntity.func_189771_df() == SkeletonType.WITHER && witherSkeletonEnabled && randPerc < witherSkeletonChance) {
+					itemSkull = new ItemStack(Items.SKULL, 1, 1);
 				}
-			} else if (event.entity instanceof EntityZombie && zombieEnabled && randPerc < zombieChance) {
-				itemSkull = new ItemStack(Items.skull, 1, 2);
-			} else if (event.entity instanceof EntityCreeper && creeperEnabled && randPerc < creeperChance) {
-				itemSkull = new ItemStack(Items.skull, 1, 4);
+			} else if (event.getEntity() instanceof EntityZombie && zombieEnabled && randPerc < zombieChance) {
+				itemSkull = new ItemStack(Items.SKULL, 1, 2);
+			} else if (event.getEntity() instanceof EntityCreeper && creeperEnabled && randPerc < creeperChance) {
+				itemSkull = new ItemStack(Items.SKULL, 1, 4);
 			}
 		}
 		if (itemSkull == null) {
 			return;
 		}
-		EntityItem theDrop = new EntityItem(event.entityLiving.worldObj, event.entityLiving.posX, event.entityLiving.posY, event.entityLiving.posZ, itemSkull);
-		theDrop.delayBeforeCanPickup = 10;
-		event.drops.add(theDrop);
+		EntityItem theDrop = new EntityItem(event.getEntityLiving().worldObj, event.getEntityLiving().posX, event.getEntityLiving().posY, event.getEntityLiving().posZ, itemSkull);
+		theDrop.setDefaultPickupDelay();
+		event.getDrops().add(theDrop);
 	}
 
 	public static boolean playerPvPOnly = true;

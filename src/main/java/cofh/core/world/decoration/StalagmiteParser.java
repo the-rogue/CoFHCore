@@ -1,12 +1,5 @@
 package cofh.core.world.decoration;
 
-import cofh.api.world.IGeneratorParser;
-import cofh.core.world.FeatureParser;
-import cofh.lib.util.WeightedRandomBlock;
-import cofh.lib.world.WorldGenStalactite;
-import cofh.lib.world.WorldGenStalagmite;
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +7,14 @@ import net.minecraft.init.Blocks;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import org.apache.logging.log4j.Logger;
+
+import cofh.api.world.IGeneratorParser;
+import cofh.core.world.FeatureParser;
+import cofh.lib.util.WeightedRandomBlock;
+import cofh.lib.world.WorldGenStalactite;
+import cofh.lib.world.WorldGenStalagmite;
+
+import com.google.gson.JsonObject;
 
 public class StalagmiteParser implements IGeneratorParser {
 
@@ -31,12 +32,12 @@ public class StalagmiteParser implements IGeneratorParser {
 		ArrayList<WeightedRandomBlock> list = new ArrayList<WeightedRandomBlock>();
 		if (!genObject.has("genBody")) {
 			log.info("Entry does not specify genBody for 'stalagmite' generator. Using air.");
-			list.add(new WeightedRandomBlock(Blocks.air));
+			list.add(new WeightedRandomBlock(Blocks.AIR));
 		} else {
 			if (!FeatureParser.parseResList(genObject.get("genBody"), list, false)) {
 				log.warn("Entry specifies invalid genBody for 'stalagmite' generator! Using air!");
 				list.clear();
-				list.add(new WeightedRandomBlock(Blocks.air));
+				list.add(new WeightedRandomBlock(Blocks.AIR));
 			}
 		}
 		WorldGenStalagmite r = stalactite ? new WorldGenStalactite(resList, matList, list) : new WorldGenStalagmite(resList, matList, list);

@@ -1,11 +1,12 @@
 package cofh.core.enchantment;
 
-import cofh.CoFHCore;
-
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantment.Rarity;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import cofh.CoFHCore;
 
 public class CoFHEnchantment {
 
@@ -16,28 +17,29 @@ public class CoFHEnchantment {
 	public static void postInit() {
 
 		int enchantId = CoFHCore.configCore.get("Enchantment", "Holding", 100);
+		EntityEquipmentSlot[] equipslots = new EntityEquipmentSlot[]{EntityEquipmentSlot.MAINHAND, EntityEquipmentSlot.OFFHAND, EntityEquipmentSlot.HEAD, EntityEquipmentSlot.CHEST, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.FEET};
 
 		for (int i = enchantId; i < 256; i++) {
 			try {
-				holding = new EnchantmentHolding(i);
+				holding = new EnchantmentHolding(Rarity.VERY_RARE, equipslots);
 				break;
 			} catch (IllegalArgumentException e) {
 
 			}
 		}
-		CoFHCore.configCore.set("Enchantment", "Holding", holding.effectId);
+		CoFHCore.configCore.set("Enchantment", "Holding", Enchantment.getEnchantmentID(holding));
 
 		enchantId = CoFHCore.configCore.get("Enchantment", "Multishot", 101);
 
 		for (int i = enchantId; i < 256; i++) {
 			try {
-				multishot = new EnchantmentMultishot(i);
+				multishot = new EnchantmentMultishot(Rarity.VERY_RARE, equipslots);
 				break;
 			} catch (IllegalArgumentException e) {
 
 			}
 		}
-		CoFHCore.configCore.set("Enchantment", "Multishot", multishot.effectId);
+		CoFHCore.configCore.set("Enchantment", "Multishot", Enchantment.getEnchantmentID(multishot));
 	}
 
 	public static NBTTagList getEnchantmentTagList(NBTTagCompound nbt) {
@@ -75,7 +77,7 @@ public class CoFHEnchantment {
 
 	public static void addEnchantment(ItemStack stack, int id, int level) {
 
-		addEnchantment(stack.stackTagCompound, id, level);
+		addEnchantment(stack.getTagCompound(), id, level);
 	}
 
 	public static Enchantment holding;

@@ -1,16 +1,5 @@
 package cofh.core.world.feature;
 
-import cofh.api.world.IFeatureGenerator;
-import cofh.api.world.IFeatureParser;
-import cofh.core.world.FeatureParser;
-import cofh.lib.util.WeightedRandomBlock;
-import cofh.lib.util.helpers.MathHelper;
-import cofh.lib.world.feature.FeatureBase;
-import cofh.lib.world.feature.FeatureBase.GenRestriction;
-import cofh.lib.world.feature.FeatureGenUniform;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +9,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 import org.apache.logging.log4j.Logger;
+
+import cofh.api.world.IFeatureGenerator;
+import cofh.api.world.IFeatureParser;
+import cofh.core.world.FeatureParser;
+import cofh.lib.util.WeightedRandomBlock;
+import cofh.lib.util.helpers.MathHelper;
+import cofh.lib.world.feature.FeatureBase;
+import cofh.lib.world.feature.FeatureBase.GenRestriction;
+import cofh.lib.world.feature.FeatureGenUniform;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class UniformParser implements IFeatureParser {
 
@@ -32,7 +33,7 @@ public class UniformParser implements IFeatureParser {
 
 	protected List<WeightedRandomBlock> generateDefaultMaterial() {
 
-		return Arrays.asList(new WeightedRandomBlock(new ItemStack(Blocks.stone, 1, -1)));
+		return Arrays.asList(new WeightedRandomBlock(new ItemStack(Blocks.STONE, 1, -1)));
 	}
 
 	@Override

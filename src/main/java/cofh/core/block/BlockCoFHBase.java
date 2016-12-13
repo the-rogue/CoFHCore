@@ -1,5 +1,34 @@
 package cofh.core.block;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving.SpawnPlacementType;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import cofh.api.block.IBlockDebug;
 import cofh.api.block.IBlockInfo;
 import cofh.api.block.IDismantleable;
@@ -10,6 +39,7 @@ import cofh.api.tileentity.IReconfigurableFacing;
 import cofh.api.tileentity.IRedstoneControl;
 import cofh.api.tileentity.ISecurable;
 import cofh.api.tileentity.ITileInfo;
+import cofh.core.render.Render;
 import cofh.core.util.CoreUtils;
 import cofh.lib.util.helpers.MathHelper;
 import cofh.lib.util.helpers.RedstoneControlHelper;
@@ -17,35 +47,8 @@ import cofh.lib.util.helpers.SecurityHelper;
 import cofh.lib.util.helpers.ServerHelper;
 import cofh.lib.util.helpers.StringHelper;
 import cofh.lib.util.position.BlockPosition;
+
 import com.mojang.authlib.GameProfile;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public abstract class BlockCoFHBase extends Block implements ITileEntityProvider, IBlockDebug, IBlockInfo, IDismantleable, IInitializer {
 
@@ -55,19 +58,19 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 	public BlockCoFHBase(Material material) {
 
 		super(material);
-		setStepSound(soundTypeStone);
+		setSoundType(SoundType.STONE);
 	}
 
 	@Override
-	public TileEntity createTileEntity(World world, int metadata) {
+	public TileEntity createTileEntity(World world, IBlockState state) {
 
-		return createNewTileEntity(world, metadata);
+		return createNewTileEntity(world, state.getBlock().getMetaFromState(state));
 	}
 
 	@Override
-	public void breakBlock(World world, int x, int y, int z, Block bId, int bMeta) {
+	public void breakBlock(World world, BlockPos pos, IBlockState state) {
 
-		TileEntity tile = world.getTileEntity(x, y, z);
+		TileEntity tile = world.getTileEntity(pos);
 
 		if (tile instanceof TileCoFHBase) {
 			TileCoFHBase theTile = (TileCoFHBase) tile;
@@ -78,53 +81,36 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 		} else if (tile instanceof IInventory) {
 			IInventory inv = (IInventory) tile;
 			for (int i = 0; i < inv.getSizeInventory(); i++) {
-				CoreUtils.dropItemStackIntoWorldWithVelocity(inv.getStackInSlot(i), world, x, y, z);
+				CoreUtils.dropItemStackIntoWorldWithVelocity(inv.getStackInSlot(i), world, pos.getX(), pos.getY(), pos.getZ());
 			}
 		}
 		if (tile != null) {
-			world.removeTileEntity(x, y, z);
+			world.removeTileEntity(pos);
 		}
-	}
-
-	@Override
-	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
-
-		if (world.getBlock(x, y, z) != this) { // BUGFIX: mojang randomly calls this method for blocks not in the world!
-			return getStatelessBoundingBox(world, x, y, z); // see: net.minecraft.item.ItemBlock.func_150936_a (1.7.10 srg)
-		}
-
-		return getBoundingBox(world, x, y, z);
 	}
 
 	protected AxisAlignedBB getBoundingBox(World world, int x, int y, int z) {
-
-		this.setBlockBoundsBasedOnState(world, x, y, z); // BUGFIX: neither vanilla nor forge call this correctly
-		return super.getCollisionBoundingBoxFromPool(world, x, y, z);
+		return FULL_BLOCK_AABB;
 	}
 
 	protected AxisAlignedBB getStatelessBoundingBox(World world, int x, int y, int z) {
 
-		return super.getCollisionBoundingBoxFromPool(world, x, y, z);
+		return FULL_BLOCK_AABB;
 	}
 
 	@Override
-	public void harvestBlock(World world, EntityPlayer player, int x, int y, int z, int meta) {
-
-	}
-
-	@Override
-	public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player) {
+	public void onBlockHarvested(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
 
 		if (!player.capabilities.isCreativeMode) {
-			dropBlockAsItem(world, x, y, z, meta, 0);
-			world.setBlock(x, y, z, Blocks.air, 0, 7);
+			dropBlockAsItem(world, pos, state, 0);
+			world.setBlockToAir(pos);
 		}
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase living, ItemStack stack) {
+	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
 
-		TileEntity tile = world.getTileEntity(x, y, z);
+		TileEntity tile = world.getTileEntity(pos);
 
 		if (ServerHelper.isServerWorld(world) && tile instanceof ISecurable) {
 			if (SecurityHelper.isSecure(stack)) {
@@ -132,8 +118,8 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 
 				if (((ISecurable) tile).setOwner(stackOwner)) {
 					; // cool, set the owner
-				} else if (living instanceof ICommandSender) {
-					((ISecurable) tile).setOwnerName(living.getCommandSenderName());
+				} else if (placer instanceof ICommandSender) {
+					((ISecurable) tile).setOwnerName(EntityList.getEntityString(placer));
 				}
 				((ISecurable) tile).setAccess(SecurityHelper.getAccess(stack));
 			}
@@ -145,10 +131,10 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 		}
 		if (tile instanceof IReconfigurableFacing) {
 			IReconfigurableFacing reconfig = (IReconfigurableFacing) tile;
-			int quadrant = MathHelper.floor(living.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+			int quadrant = MathHelper.floor(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 
 			if (reconfig.allowYAxisFacing()) {
-				quadrant = living.rotationPitch > 60 ? 4 : living.rotationPitch < -60 ? 5 : quadrant;
+				quadrant = placer.rotationPitch > 60 ? 4 : placer.rotationPitch < -60 ? 5 : quadrant;
 			}
 			switch (quadrant) {
 			case 0:
@@ -178,126 +164,106 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 	}
 
 	@Override
-	public void onNeighborBlockChange(World world, int x, int y, int z, Block block) {
+	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
 
-		TileEntity tile = BlockPosition.getTileEntityRaw(world, x, y, z);
+		TileEntity tile;
+		if (world instanceof World) {
+			tile = BlockPosition.getTileEntityRaw((World) world, pos);
+		} else {
+			tile = world.getTileEntity(pos);
+		}
 
 		if (tile instanceof TileCoFHBase) {
+			((TileCoFHBase) tile).onNeighborTileChange(neighbor);
 			((TileCoFHBase) tile).onNeighborBlockChange();
 		}
 	}
 
 	@Override
-	public void onNeighborChange(IBlockAccess world, int x, int y, int z, int tileX, int tileY, int tileZ) {
+	public float getPlayerRelativeBlockHardness(IBlockState state, EntityPlayer player, World world, BlockPos pos) {
 
-		TileEntity tile;
-		if (world instanceof World) {
-			tile = BlockPosition.getTileEntityRaw((World) world, x, y, z);
-		} else {
-			tile = world.getTileEntity(x, y, z);
-		}
-
-		if (tile instanceof TileCoFHBase) {
-			((TileCoFHBase) tile).onNeighborTileChange(tileX, tileY, tileZ);
-		}
-	}
-
-	@Override
-	public float getPlayerRelativeBlockHardness(EntityPlayer player, World world, int x, int y, int z) {
-
-		TileEntity tile = world.getTileEntity(x, y, z);
+		TileEntity tile = world.getTileEntity(pos);
 
 		if (tile instanceof ISecurable && !((ISecurable) tile).canPlayerAccess(player)) {
 			return -1;
 		}
-		return ForgeHooks.blockStrength(this, player, world, x, y, z);
+		return ForgeHooks.blockStrength(state, player, world, pos);
 	}
 
 	@Override
-	public int damageDropped(int i) {
+	public int damageDropped(IBlockState state) {
 
-		return i;
+		return state.getBlock().getMetaFromState(state);
 	}
 
 	@Override
-	public int getComparatorInputOverride(World world, int x, int y, int z, int side) {
+	public int getComparatorInputOverride(IBlockState blockState, World world, BlockPos pos) {
 
-		TileEntity tile = world.getTileEntity(x, y, z);
-		return tile instanceof TileCoFHBase ? ((TileCoFHBase) tile).getComparatorInput(side) : 0;
+		TileEntity tile = world.getTileEntity(pos);
+		return tile instanceof TileCoFHBase ? ((TileCoFHBase) tile).getComparatorInput(blockState) : 0;
 	}
 
 	@Override
-	public int getLightValue(IBlockAccess world, int x, int y, int z) {
+	public int getLightValue(IBlockState state, IBlockAccess world, BlockPos pos) {
 
-		TileEntity tile = world.getTileEntity(x, y, z);
+		TileEntity tile = world.getTileEntity(pos);
 
-		if (tile instanceof TileCoFHBase && tile.getWorldObj() != null) {
+		if (tile instanceof TileCoFHBase && tile.getWorld() != null) {
 			return ((TileCoFHBase) tile).getLightValue();
 		}
 		return 0;
 	}
 
 	@Override
-	public boolean canCreatureSpawn(EnumCreatureType type, IBlockAccess world, int x, int y, int z) {
+	public boolean canCreatureSpawn(IBlockState state, IBlockAccess world, BlockPos pos, SpawnPlacementType type) {
 
 		return false;
 	}
 
 	@Override
-	public boolean isOpaqueCube() {
+	public boolean isOpaqueCube(IBlockState state) {
 
 		return false;
 	}
 
 	@Override
-	public boolean onBlockEventReceived(World world, int x, int y, int z, int eventNum, int eventArg) {
+	public boolean rotateBlock(World world, BlockPos pos, EnumFacing axis) {
 
-		TileEntity tile = world.getTileEntity(x, y, z);
-		return tile != null ? tile.receiveClientEvent(eventNum, eventArg) : false;
-	}
-
-	@Override
-	public boolean renderAsNormalBlock() {
-
-		return false;
-	}
-
-	@Override
-	public boolean rotateBlock(World world, int x, int y, int z, ForgeDirection axis) {
-
-		TileEntity tile = world.getTileEntity(x, y, z);
+		TileEntity tile = world.getTileEntity(pos);
 
 		return tile instanceof IReconfigurableFacing ? ((IReconfigurableFacing) tile).rotateBlock() : false;
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerBlockIcons(IIconRegister ir) {
-
+	public void registertexture()
+	{
+		Render.blockTexture(this);
 	}
 
 	@Override
-	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
-
-		return dismantleBlock(null, getItemStackTag(world, x, y, z), world, x, y, z, false, true);
+	public ArrayList<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
+		if (world instanceof World) {
+			return dismantleBlock(null, state,(World) world, pos, true);
+		}
+		return null;
 	}
 
 	@Override
-	public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
+	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
 
 		Item item = Item.getItemFromBlock(this);
 
 		if (item == null) {
 			return null;
 		}
-		int bMeta = world.getBlockMetadata(x, y, z);
+		int bMeta = state.getBlock().getMetaFromState(state);
 		ItemStack pickBlock = new ItemStack(item, 1, bMeta);
-		pickBlock.setTagCompound(getItemStackTag(world, x, y, z));
+		pickBlock.setTagCompound(getItemStackTag(world, pos));
 
 		return pickBlock;
 	}
 
-	public NBTTagCompound getItemStackTag(World world, int x, int y, int z) {
+	public NBTTagCompound getItemStackTag(IBlockAccess world, BlockPos pos) {
 
 		return null;
 	}
@@ -307,15 +273,15 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 
 	/* IBlockDebug */
 	@Override
-	public void debugBlock(IBlockAccess world, int x, int y, int z, ForgeDirection side, EntityPlayer player) {
+	public void debugBlock(IBlockAccess world, int x, int y, int z, EnumFacing side, EntityPlayer player) {
 
 	}
 
 	/* IBlockInfo */
 	@Override
-	public void getBlockInfo(IBlockAccess world, int x, int y, int z, ForgeDirection side, EntityPlayer player, List<IChatComponent> info, boolean debug) {
+	public void getBlockInfo(IBlockAccess world, BlockPos pos, EnumFacing side, EntityPlayer player, List<ITextComponent> info, boolean debug) {
 
-		TileEntity tile = world.getTileEntity(x, y, z);
+		TileEntity tile = world.getTileEntity(pos);
 
 		if (tile instanceof ITileInfo) {
 			((ITileInfo) tile).getTileInfo(info, side, player, debug);
@@ -325,7 +291,7 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 				if (eReceiver.getMaxEnergyStored(side) <= 0) {
 					return;
 				}
-				info.add(new ChatComponentText(StringHelper.localize("info.cofh.energy") + ": " + eReceiver.getEnergyStored(side) + "/"
+				info.add(new TextComponentString(StringHelper.localize("info.cofh.energy") + ": " + eReceiver.getEnergyStored(side) + "/"
 						+ eReceiver.getMaxEnergyStored(side) + " RF."));
 			}
 		}
@@ -333,15 +299,16 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 
 	/* IDismantleable */
 	@Override
-	public ArrayList<ItemStack> dismantleBlock(EntityPlayer player, World world, int x, int y, int z, boolean returnDrops) {
-
-		return dismantleBlock(player, getItemStackTag(world, x, y, z), world, x, y, z, returnDrops, false);
+	public ArrayList<ItemStack> dismantleBlock(EntityPlayer player, IBlockState state, World world, BlockPos pos, boolean returnDropss) {
+		
+		this.breakBlock(world, pos, state);
+		return NO_DROP;
 	}
 
 	@Override
-	public boolean canDismantle(EntityPlayer player, World world, int x, int y, int z) {
+	public boolean canDismantle(EntityPlayer player, World world, BlockPos pos) {
 
-		TileEntity tile = world.getTileEntity(x, y, z);
+		TileEntity tile = world.getTileEntity(pos);
 
 		if (tile instanceof ISecurable) {
 			return ((ISecurable) tile).canPlayerAccess(player);

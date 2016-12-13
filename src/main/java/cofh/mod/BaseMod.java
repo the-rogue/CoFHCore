@@ -1,28 +1,11 @@
 package cofh.mod;
 
-import cofh.mod.updater.IUpdatableMod;
-import cofh.mod.updater.ModRange;
-import cofh.mod.updater.ModVersion;
-import com.google.common.base.Strings;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.ICrashCallable;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.ObfuscationReflectionHelper;
-import cpw.mods.fml.common.network.NetworkCheckHandler;
-import cpw.mods.fml.common.registry.LanguageRegistry;
-import cpw.mods.fml.common.versioning.InvalidVersionSpecificationException;
-import cpw.mods.fml.relauncher.FMLLaunchHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,13 +19,29 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StringTranslate;
+import net.minecraft.util.text.translation.LanguageMap;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.ICrashCallable;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.network.NetworkCheckHandler;
+import net.minecraftforge.fml.common.versioning.InvalidVersionSpecificationException;
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.helpers.Loader;
 import org.apache.logging.log4j.spi.AbstractLogger;
+
+import cofh.mod.updater.IUpdatableMod;
+import cofh.mod.updater.ModRange;
+import cofh.mod.updater.ModVersion;
+
+import com.google.common.base.Strings;
 
 public abstract class BaseMod implements IUpdatableMod {
 
@@ -68,7 +67,7 @@ public abstract class BaseMod implements IUpdatableMod {
 
 	private void init() {
 
-		ModContainer container = cpw.mods.fml.common.Loader.instance().activeModContainer();
+		ModContainer container = net.minecraftforge.fml.common.Loader.instance().activeModContainer();
 		if (container.getSource().isDirectory()) {
 			FMLCommonHandler.instance().registerCrashCallable(new CrashCallable("Loaded from a directory"));
 		} else {
@@ -169,15 +168,6 @@ public abstract class BaseMod implements IUpdatableMod {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void loadLanguageFile(String lang, Properties langPack) {
-
-		HashMap<String, String> parsedLangFile = new HashMap<String, String>();
-		parsedLangFile.putAll((Map) langPack); // lovely casting hack
-
-		LanguageRegistry.instance().injectLanguage(lang.intern(), parsedLangFile);
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void loadLang() {
 
 		if (FMLLaunchHandler.side() == Side.CLIENT) {
@@ -195,8 +185,8 @@ public abstract class BaseMod implements IUpdatableMod {
 			Properties langPack = new Properties();
 			loadLanguageFile(langPack, is);
 
-			StringTranslate i = ObfuscationReflectionHelper.getPrivateValue(StringTranslate.class, null, "instance", "field_74817_a");
-			Map m = ObfuscationReflectionHelper.getPrivateValue(StringTranslate.class, i, "field_74816_c", "languageList");
+			LanguageMap i = ObfuscationReflectionHelper.getPrivateValue(LanguageMap.class, null, "instance", "field_74817_a");
+			Map m = ObfuscationReflectionHelper.getPrivateValue(LanguageMap.class, i, "field_74816_c", "languageList");
 			m.putAll(langPack);
 		} catch (Throwable t) {
 			_log.catching(Level.INFO, t);
@@ -233,7 +223,6 @@ public abstract class BaseMod implements IUpdatableMod {
 
 			for (String lang : Arrays.asList("en_US", l)) {
 				if (lang != null) {
-					Properties langPack = new Properties();
 					try {
 						List<IResource> files = manager.getAllResources(new ResourceLocation(_path + lang + ".lang"));
 						for (IResource file : files) {
@@ -242,7 +231,7 @@ public abstract class BaseMod implements IUpdatableMod {
 								continue;
 							}
 							try {
-								loadLanguageFile(langPack, file.getInputStream());
+								LanguageMap.inject(file.getInputStream());
 							} catch (Throwable t) {
 								_log.warn(AbstractLogger.CATCHING_MARKER, "A resource pack has a file for language '" + lang + "' but the file is invalid.", t);
 							}
@@ -250,7 +239,6 @@ public abstract class BaseMod implements IUpdatableMod {
 					} catch (Throwable t) {
 						_log.info(AbstractLogger.CATCHING_MARKER, "No language data for '" + lang + "'", t);
 					}
-					loadLanguageFile(lang, langPack);
 				}
 			}
 

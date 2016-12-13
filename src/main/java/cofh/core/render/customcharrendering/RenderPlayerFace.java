@@ -1,23 +1,23 @@
 package cofh.core.render.customcharrendering;
 
-import cofh.core.ProxyClient;
-import cofh.core.render.CoFHFontRenderer;
-import cofh.lib.util.helpers.SecurityHelper;
-import com.google.common.collect.Iterables;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
-import com.mojang.authlib.properties.Property;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
+
+import cofh.core.ProxyClient;
+import cofh.core.render.CoFHFontRenderer;
+import cofh.lib.util.helpers.SecurityHelper;
+
+import com.google.common.collect.Iterables;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
+import com.mojang.authlib.properties.Property;
 
 public class RenderPlayerFace implements ICustomCharRenderer {
 
@@ -82,6 +82,7 @@ public class RenderPlayerFace implements ICustomCharRenderer {
 
 		if (profile != null) {
 			Minecraft minecraft = Minecraft.getMinecraft();
+			@SuppressWarnings("rawtypes")
 			Map map = minecraft.func_152342_ad().func_152788_a(profile);
 
 			if (map.containsKey(MinecraftProfileTexture.Type.SKIN)) {

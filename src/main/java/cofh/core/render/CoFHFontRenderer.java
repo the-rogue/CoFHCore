@@ -1,16 +1,7 @@
 package cofh.core.render;
 
-import cofh.core.ProxyClient;
-import cofh.core.render.customcharrendering.ICustomCharRenderer;
-import cofh.core.render.customcharrendering.RenderPlayerFace;
-import cofh.core.render.customcharrendering.RenderSprite;
-import cofh.lib.util.helpers.SecurityHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import gnu.trove.map.hash.TCharObjectHashMap;
 
-import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.client.gui.FontRenderer;
@@ -19,6 +10,13 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import cofh.core.ProxyClient;
+import cofh.core.render.customcharrendering.ICustomCharRenderer;
+import cofh.core.render.customcharrendering.RenderPlayerFace;
+import cofh.core.render.customcharrendering.RenderSprite;
+import cofh.lib.util.helpers.SecurityHelper;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class CoFHFontRenderer extends FontRenderer {
@@ -82,25 +80,9 @@ public class CoFHFontRenderer extends FontRenderer {
 	 * Breaks a string into a list of pieces that will fit a specified width.
 	 */
 	@Override
-	public List<String> listFormattedStringToWidth(String par1Str, int par2) {
+	public List<?> listFormattedStringToWidth(String par1Str, int par2) {
 
-		return Arrays.asList(this.wrapFormattedStringToWidth(par1Str, par2).split("\n"));
-	}
-
-	@Override
-	public String wrapFormattedStringToWidth(String par1Str, int par2) {
-
-		int j = this.sizeStringToWidth(par1Str, par2);
-
-		if (par1Str.length() <= j) {
-			return par1Str;
-		} else {
-			String s1 = par1Str.substring(0, j);
-			char c0 = par1Str.charAt(j);
-			boolean flag = c0 == 32 || c0 == 10;
-			String s2 = getFormatFromString(s1) + par1Str.substring(j + (flag ? 1 : 0));
-			return s1 + "\n" + this.wrapFormattedStringToWidth(s2, par2);
-		}
+		return super.listFormattedStringToWidth(par1Str, par2);
 	}
 
 	public int sizeStringToWidth(String par1Str, int par2) {

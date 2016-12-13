@@ -1,5 +1,21 @@
 package cofh.core.gui.client;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.network.NetworkPlayerInfo;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.ITextComponent;
+
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
+
 import cofh.core.RegistrySocial;
 import cofh.core.gui.GuiBaseAdv;
 import cofh.core.gui.GuiTextList;
@@ -10,19 +26,6 @@ import cofh.core.network.PacketSocial;
 import cofh.core.network.PacketSocial.PacketTypes;
 import cofh.lib.gui.GuiProps;
 import cofh.lib.gui.element.ElementButton;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiPlayerInfo;
-import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.util.ResourceLocation;
-
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 public class GuiFriendsList extends GuiBaseAdv {
 
@@ -83,7 +86,7 @@ public class GuiFriendsList extends GuiBaseAdv {
 		if (tbName != null) { // Stops GUI resize deleting text.
 			temp = tbName.getText();
 		}
-		tbName = new GuiTextField(this.fontRendererObj, tbNameX, tbNameY, 128, TB_HEIGHT);
+		tbName = new GuiTextField(0, this.fontRendererObj, tbNameX, tbNameY, 128, TB_HEIGHT);
 		tbName.setMaxStringLength(20);
 		tbName.setText(temp);
 		tbName.setEnableBackgroundDrawing(false);
@@ -178,14 +181,14 @@ public class GuiFriendsList extends GuiBaseAdv {
 		if (this.tbName.isFocused()) {
 
 			if (j == 28) { // enter
-				playSound("random.click", 1.0F, 0.7F);
+				playSound("random.click", 1.0F, 0.7F, SoundCategory.MASTER);
 			}
 		}
 		updateButtons();
 	}
 
 	@Override
-	protected void mouseClicked(int mX, int mY, int mButton) {
+	protected void mouseClicked(int mX, int mY, int mButton) throws IOException {
 
 		int textAreaX = taFriendsList.xPos - guiLeft;
 		int textAreaY = taFriendsList.yPos - guiTop;
@@ -244,7 +247,7 @@ public class GuiFriendsList extends GuiBaseAdv {
 	}
 
 	@Override
-	public void handleMouseInput() {
+	public void handleMouseInput() throws IOException {
 
 		super.handleMouseInput();
 
@@ -298,11 +301,11 @@ public class GuiFriendsList extends GuiBaseAdv {
 				&& taFriendsList.startLine < taFriendsList.textLines.size() - taFriendsList.displayLines;
 	}
 
-	public List<String> getOnlineNames() {
+	public List<ITextComponent> getOnlineNames() {
 
-		List<String> online = new LinkedList<String>();
-		for (Object curObj : Minecraft.getMinecraft().thePlayer.sendQueue.playerInfoList) {
-			online.add(((GuiPlayerInfo) curObj).name);
+		List<ITextComponent> online = new LinkedList<ITextComponent>();
+		for (Object curObj : Minecraft.getMinecraft().thePlayer.connection.getPlayerInfoMap()) {
+			online.add(((NetworkPlayerInfo) curObj).getDisplayName());
 		}
 		return online;
 	}

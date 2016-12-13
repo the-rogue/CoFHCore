@@ -1,25 +1,5 @@
 package cofh.asm;
 
-import cofh.mod.ChildMod;
-import cofh.mod.ChildModContainer;
-import cofh.repack.codechicken.lib.asm.ASMInit;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import cpw.mods.fml.common.DummyModContainer;
-import cpw.mods.fml.common.FMLLog;
-import cpw.mods.fml.common.LoadController;
-import cpw.mods.fml.common.ModContainerFactory;
-import cpw.mods.fml.common.ModMetadata;
-import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.event.FMLConstructionEvent;
-import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
-import cpw.mods.fml.common.versioning.VersionParser;
-import cpw.mods.fml.relauncher.FMLInjectionData;
-import cpw.mods.fml.relauncher.FMLLaunchHandler;
-import cpw.mods.fml.relauncher.IFMLCallHook;
-import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
-import cpw.mods.fml.relauncher.Side;
-
 import java.awt.Desktop;
 import java.awt.Rectangle;
 import java.io.File;
@@ -31,6 +11,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -39,9 +20,30 @@ import javax.swing.event.HyperlinkListener;
 
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecraftforge.fml.common.DummyModContainer;
+import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.LoadController;
+import net.minecraftforge.fml.common.ModContainerFactory;
+import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
+import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
+import net.minecraftforge.fml.common.versioning.VersionParser;
+import net.minecraftforge.fml.relauncher.FMLInjectionData;
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
+import net.minecraftforge.fml.relauncher.IFMLCallHook;
+import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
+import net.minecraftforge.fml.relauncher.Side;
 
 import org.apache.logging.log4j.Level;
 import org.objectweb.asm.Type;
+
+import cofh.mod.ChildMod;
+import cofh.mod.ChildModContainer;
+import cofh.repack.codechicken.lib.asm.ASMInit;
+
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 
 @IFMLLoadingPlugin.TransformerExclusions({ "cofh.asm." })
 @IFMLLoadingPlugin.SortingIndex(1001)

@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 
 public abstract class CsvFile {
-	@SuppressWarnings("resource")
 	public static Map<String, String> read(File f, int[] n_sides) throws IOException {
 		Map<String, String> data = new HashMap<String, String>();
 		Scanner in = new Scanner(new BufferedReader(new FileReader(f)));

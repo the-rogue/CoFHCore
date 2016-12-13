@@ -1,16 +1,16 @@
 package cofh.core.enchantment;
 
-import cofh.core.item.tool.ItemBowAdv;
-
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnumEnchantmentType;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
+import cofh.core.item.tool.ItemBowAdv;
 
 public class EnchantmentMultishot extends Enchantment {
 
-	public EnchantmentMultishot(int id) {
+	public EnchantmentMultishot(Rarity rarity, EntityEquipmentSlot[] slots) {
 
-		super(id, 5, EnumEnchantmentType.bow);
+		super(rarity, EnumEnchantmentType.BOW, slots);
 	}
 
 	@Override

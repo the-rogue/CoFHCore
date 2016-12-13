@@ -28,7 +28,7 @@ public class KeyBindingEmpower implements IKeyBinding {
 	public void keyPressServer(EntityPlayer player) {
 
 		if (ItemHelper.isPlayerHoldingEmpowerableItem(player) && ItemHelper.toggleHeldEmpowerableItemState(player)) {
-			((IEmpowerableItem) player.getCurrentEquippedItem().getItem()).onStateChange(player, player.getCurrentEquippedItem());
+			((IEmpowerableItem) player.getHeldItemMainhand().getItem()).onStateChange(player, player.getHeldItemMainhand());
 		}
 	}
 

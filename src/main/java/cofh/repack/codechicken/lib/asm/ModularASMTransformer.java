@@ -1,7 +1,5 @@
 package cofh.repack.codechicken.lib.asm;
 
-import static cofh.repack.codechicken.lib.asm.ASMHelper.*;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,10 +14,16 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
 
-public class ModularASMTransformer
-{
-    public static class ClassNodeTransformerList
-    {
+import static cofh.repack.codechicken.lib.asm.ASMHelper.*;
+
+//TODO Java doc all the internal class constructors.
+public class ModularASMTransformer {
+
+    /**
+     * Contains a list of transformers for a given class.
+     * Also contains some basic logic for doing the actual transform.
+     */
+    public static class ClassNodeTransformerList {
         List<ClassNodeTransformer> transformers = new LinkedList<ClassNodeTransformer>();
         HashSet<ObfMapping> methodsToSort = new HashSet<ObfMapping>();
 
@@ -32,31 +36,36 @@ public class ModularASMTransformer
             ClassNode cnode = new ClassNode();
             ClassReader reader = new ClassReader(bytes);
             ClassVisitor cv = cnode;
-            if(!methodsToSort.isEmpty())
+            if (!methodsToSort.isEmpty()) {
                 cv = new LocalVariablesSorterVisitor(methodsToSort, cv);
+            }
             reader.accept(cv, ClassReader.EXPAND_FRAMES);
 
             try {
                 int writeFlags = 0;
-                for(ClassNodeTransformer t : transformers) {
+                for (ClassNodeTransformer t : transformers) {
                     t.transform(cnode);
-                    writeFlags|=t.writeFlags;
+                    writeFlags |= t.writeFlags;
                 }
 
                 bytes = createBytes(cnode, writeFlags);
-                if(config.getTag("dump_asm").getBooleanValue(true))
-                    dump(bytes, new File("asm/ccl_modular/"+cnode.name.replace('/', '#')+".txt"), false, false);
+                if (config.getTag("dump_asm").getBooleanValue(true)) {
+                    dump(bytes, new File("asm/ccl_modular/" + cnode.name.replace('/', '#') + ".txt"), false, false);
+                }
                 return bytes;
             } catch (RuntimeException e) {
-                dump(bytes, new File("asm/ccl_modular/"+cnode.name.replace('/', '#')+".txt"), false, false);
+                dump(bytes, new File("asm/ccl_modular/" + cnode.name.replace('/', '#') + ".txt"), false, false);
                 throw e;
             }
         }
     }
 
-    public static abstract class ClassNodeTransformer
-    {
+    /**
+     * Parent to all transformer's.
+     */
+    public static abstract class ClassNodeTransformer {
         public int writeFlags;
+
         public ClassNodeTransformer(int writeFlags) {
             this.writeFlags = writeFlags;
         }
@@ -66,13 +75,17 @@ public class ModularASMTransformer
         }
 
         public abstract String className();
+
         public abstract void transform(ClassNode cnode);
 
-        public void addMethodsToSort(Set<ObfMapping> set) {}
+        public void addMethodsToSort(Set<ObfMapping> set) {
+        }
     }
 
-    public static abstract class MethodTransformer extends ClassNodeTransformer
-    {
+    /**
+     * Base Method transformer.
+     */
+    public static abstract class MethodTransformer extends ClassNodeTransformer {
         public final ObfMapping method;
 
         public MethodTransformer(ObfMapping method) {
@@ -87,28 +100,31 @@ public class ModularASMTransformer
         @Override
         public void transform(ClassNode cnode) {
             MethodNode mv = findMethod(method, cnode);
-            if (mv == null)
+            if (mv == null) {
                 throw new RuntimeException("Method not found: " + method);
+            }
 
             try {
                 transform(mv);
             } catch (Exception e) {
-                throw new RuntimeException("Error transforming method: "+method, e);
+                throw new RuntimeException("Error transforming method: " + method, e);
             }
         }
 
         public abstract void transform(MethodNode mv);
     }
 
-    public static class MethodWriter extends ClassNodeTransformer
-    {
+    /**
+     * Writes a method containing the provided InsnList with the ObfMapping as the method name and desc.
+     */
+    public static class MethodWriter extends ClassNodeTransformer {
         public final int access;
         public final ObfMapping method;
         public final String[] exceptions;
         public InsnList list;
 
         public MethodWriter(int access, ObfMapping method) {
-            this(access, method, null, (InsnList)null);
+            this(access, method, null, (InsnList) null);
         }
 
         public MethodWriter(int access, ObfMapping method, InsnList list) {
@@ -120,7 +136,7 @@ public class ModularASMTransformer
         }
 
         public MethodWriter(int access, ObfMapping method, String[] exceptions) {
-            this(access, method, exceptions, (InsnList)null);
+            this(access, method, exceptions, (InsnList) null);
         }
 
         public MethodWriter(int access, ObfMapping method, String[] exceptions, InsnList list) {
@@ -142,28 +158,33 @@ public class ModularASMTransformer
         @Override
         public void transform(ClassNode cnode) {
             MethodNode mv = findMethod(method, cnode);
-            if(mv == null)
+            if (mv == null) {
                 mv = (MethodNode) method.visitMethod(cnode, access, exceptions);
-            else {
+            } else {
                 mv.access = access;
                 mv.instructions.clear();
-                if (mv.localVariables != null)
+                if (mv.localVariables != null) {
                     mv.localVariables.clear();
-                if (mv.tryCatchBlocks != null)
+                }
+                if (mv.tryCatchBlocks != null) {
                     mv.tryCatchBlocks.clear();
+                }
             }
 
             write(mv);
         }
 
         public void write(MethodNode mv) {
-            logger.debug("Writing method "+method);
+            logger.debug("Writing method " + method);
             list.accept(mv);
         }
     }
 
-    public static class MethodInjector extends MethodTransformer
-    {
+    /**
+     * Injects a call before or after the needle.
+     * If needle is null it will inject at the start or end of the method.
+     */
+    public static class MethodInjector extends MethodTransformer {
         public ASMBlock needle;
         public ASMBlock injection;
         public boolean before;
@@ -194,29 +215,33 @@ public class ModularASMTransformer
 
         @Override
         public void transform(MethodNode mv) {
-            if(needle == null) {
-                logger.debug("Injecting "+(before ? "before" : "after")+" method "+method);
-                if (before)
+            if (needle == null) {
+                logger.debug("Injecting " + (before ? "before" : "after") + " method " + method);
+                if (before) {
                     mv.instructions.insert(injection.rawListCopy());
-                else
+                } else {
                     mv.instructions.add(injection.rawListCopy());
-            }
-            else {
+                }
+            } else {
                 for (InsnListSection key : InsnComparator.findN(mv.instructions, needle.list)) {
-                    logger.debug("Injecting "+(before ? "before" : "after")+" method "+method+" @ "+key.start+" - "+key.end);
+                    logger.debug("Injecting " + (before ? "before" : "after") + " method " + method + " @ " + key.start + " - " + key.end);
                     ASMBlock injectBlock = injection.copy().mergeLabels(needle.applyLabels(key));
 
-                    if (before)
+                    if (before) {
                         key.insertBefore(injectBlock.list.list);
-                    else
+                    } else {
                         key.insert(injectBlock.list.list);
+                    }
                 }
             }
         }
     }
 
-    public static class MethodReplacer extends MethodTransformer
-    {
+    /**
+     * Replaces a specific needle with a specific replacement.
+     * Can replace more than one needle.
+     */
+    public static class MethodReplacer extends MethodTransformer {
         public ASMBlock needle;
         public ASMBlock replacement;
 
@@ -238,15 +263,18 @@ public class ModularASMTransformer
         @Override
         public void transform(MethodNode mv) {
             for (InsnListSection key : InsnComparator.findN(mv.instructions, needle.list)) {
-                logger.debug("Replacing method "+method+" @ "+key.start+" - "+key.end);
+                logger.debug("Replacing method " + method + " @ " + key.start + " - " + key.end);
                 ASMBlock replaceBlock = replacement.copy().pullLabels(needle.applyLabels(key));
                 key.insert(replaceBlock.list.list);
             }
         }
     }
 
-    public static class FieldWriter extends ClassNodeTransformer
-    {
+    /**
+     * Writes a field to a class.
+     * ObfMapping contains the class to put the field.
+     */
+    public static class FieldWriter extends ClassNodeTransformer {
         public final ObfMapping field;
         public final int access;
         public final Object value;
@@ -274,16 +302,31 @@ public class ModularASMTransformer
 
     public HashMap<String, ClassNodeTransformerList> transformers = new HashMap<String, ClassNodeTransformerList>();
 
+    /**
+     * Adds a ClassNodeTransformer to this transformer.
+     *
+     * @param t Transformer to add.
+     */
     public void add(ClassNodeTransformer t) {
         ClassNodeTransformerList list = transformers.get(t.className());
-        if(list == null)
+        if (list == null) {
             transformers.put(t.className(), list = new ClassNodeTransformerList());
+        }
         list.add(t);
     }
 
+    /**
+     * Runs the transform.
+     *
+     * @param name  name of the class being loaded.
+     * @param bytes Class bytes.
+     * @return Returns null if the class passed is null, returns original class if there are no transformers for a given class.
+     * Otherwise returns transformed class.
+     */
     public byte[] transform(String name, byte[] bytes) {
-        if(bytes == null)
+        if (bytes == null) {
             return null;
+        }
 
         ClassNodeTransformerList list = transformers.get(name);
         return list == null ? bytes : list.transform(bytes);

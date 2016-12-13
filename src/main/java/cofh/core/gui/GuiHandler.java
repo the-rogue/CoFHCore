@@ -1,17 +1,15 @@
 package cofh.core.gui;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.IGuiHandler;
 import cofh.core.block.TileCoFHBase;
 import cofh.core.gui.client.GuiAugments;
 import cofh.core.gui.client.GuiFriendsList;
 import cofh.core.gui.container.ContainerAugments;
 import cofh.core.gui.container.ContainerFriendsList;
-import cpw.mods.fml.common.network.IGuiHandler;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
-
-@SuppressWarnings({ "rawtypes", "unchecked" })
 public class GuiHandler implements IGuiHandler {
 
 	public static final int TILE_ID = 0;

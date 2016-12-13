@@ -1,20 +1,19 @@
 package cofh.core.item.tool;
 
-import cofh.core.util.CoreUtils;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.client.C07PacketPlayerDigging;
-import net.minecraft.network.play.server.S23PacketBlockChange;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import cofh.core.util.CoreUtils;
 
 public class ItemSickleAdv extends ItemToolAdv {
 
@@ -25,12 +24,12 @@ public class ItemSickleAdv extends ItemToolAdv {
 		super(3.0F, toolMaterial);
 		addToolClass("sickle");
 
-		effectiveMaterials.add(Material.leaves);
-		effectiveMaterials.add(Material.plants);
-		effectiveMaterials.add(Material.vine);
-		effectiveMaterials.add(Material.web);
-		effectiveBlocks.add(Blocks.web);
-		effectiveBlocks.add(Blocks.vine);
+		effectiveMaterials.add(Material.LEAVES);
+		effectiveMaterials.add(Material.PLANTS);
+		effectiveMaterials.add(Material.VINE);
+		effectiveMaterials.add(Material.WEB);
+		effectiveBlocks.add(Blocks.WEB);
+		effectiveBlocks.add(Blocks.VINE);
 	}
 
 	public ItemSickleAdv setRadius(int radius) {
@@ -40,9 +39,9 @@ public class ItemSickleAdv extends ItemToolAdv {
 	}
 
 	@Override
-	protected boolean harvestBlock(World world, int x, int y, int z, EntityPlayer player) {
+	protected boolean harvestBlock(World world, BlockPos pos, EntityPlayer player) {
 
-		if (world.isAirBlock(x, y, z)) {
+		if (world.isAirBlock(pos)) {
 			return false;
 		}
 		EntityPlayerMP playerMP = null;
@@ -51,20 +50,20 @@ public class ItemSickleAdv extends ItemToolAdv {
 		}
 		// check if the block can be broken, since extra block breaks shouldn't instantly break stuff like obsidian
 		// or precious ores you can't harvest while mining stone
-		Block block = world.getBlock(x, y, z);
-		int meta = world.getBlockMetadata(x, y, z);
+		Block block = world.getBlockState(pos).getBlock();
+		IBlockState blockstate = world.getBlockState(pos);
 		// only effective materials
-		if (!(getToolClasses(player.getCurrentEquippedItem()).contains(block.getHarvestTool(meta)) || canHarvestBlock(block, player.getCurrentEquippedItem()))) {
+		if (!(getToolClasses(player.getHeldItemMainhand()).contains(block.getHarvestTool(blockstate)) || canHarvestBlock(block, player.getHeldItemMainhand()))) {
 			return false;
 		}
-		if (!ForgeHooks.canHarvestBlock(block, player, meta)) {
+		if (!ForgeHooks.canHarvestBlock(block, player, world, pos)) {
 			return false;
 		}
 		// send the blockbreak event
-		BreakEvent event = null;
+		int xp;
 		if (playerMP != null) {
-			event = ForgeHooks.onBlockBreakEvent(world, playerMP.theItemInWorldManager.getGameType(), playerMP, x, y, z);
-			if (event.isCanceled()) {
+			xp = ForgeHooks.onBlockBreakEvent(world, playerMP.interactionManager.getGameType(), playerMP, pos);
+			if (xp == -1) {
 				return false;
 			}
 		}
@@ -92,8 +91,8 @@ public class ItemSickleAdv extends ItemToolAdv {
 			if (block.removedByPlayer(world, player, x, y, z, true)) {
 				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
 				block.harvestBlock(world, player, x, y, z, meta);
-				if (block.equals(Blocks.vine)) {
-					CoreUtils.dropItemStackIntoWorldWithVelocity(new ItemStack(Blocks.vine), world, x, y, z);
+				if (block.equals(Blocks.VINE)) {
+					CoreUtils.dropItemStackIntoWorldWithVelocity(new ItemStack(Blocks.VINE), world, x, y, z);
 				}
 				if (event != null) {
 					block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());

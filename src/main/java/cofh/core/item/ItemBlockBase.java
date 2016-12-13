@@ -1,11 +1,5 @@
 package cofh.core.item;
 
-import cofh.core.render.CoFHFontRenderer;
-import cofh.lib.util.helpers.SecurityHelper;
-import cofh.lib.util.helpers.StringHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.Entity;
@@ -13,6 +7,11 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import cofh.core.render.CoFHFontRenderer;
+import cofh.lib.util.helpers.SecurityHelper;
+import cofh.lib.util.helpers.StringHelper;
 
 public class ItemBlockBase extends ItemBlock {
 
@@ -51,8 +50,7 @@ public class ItemBlockBase extends ItemBlock {
 	public Entity createEntity(World world, Entity location, ItemStack stack) {
 
 		if (SecurityHelper.isSecure(stack)) {
-			location.invulnerable = true;
-			location.isImmuneToFire = true;
+			location.setEntityInvulnerable(true);
 			((EntityItem) location).lifespan = Integer.MAX_VALUE;
 		}
 		return null;

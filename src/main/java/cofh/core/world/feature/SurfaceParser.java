@@ -1,12 +1,5 @@
 package cofh.core.world.feature;
 
-import cofh.lib.util.WeightedRandomBlock;
-import cofh.lib.world.feature.FeatureBase;
-import cofh.lib.world.feature.FeatureBase.GenRestriction;
-import cofh.lib.world.feature.FeatureGenSurface;
-import cofh.lib.world.feature.FeatureGenTopBlock;
-import com.google.gson.JsonObject;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,14 +8,22 @@ import net.minecraft.world.gen.feature.WorldGenerator;
 
 import org.apache.logging.log4j.Logger;
 
+import cofh.lib.util.WeightedRandomBlock;
+import cofh.lib.world.feature.FeatureBase;
+import cofh.lib.world.feature.FeatureBase.GenRestriction;
+import cofh.lib.world.feature.FeatureGenSurface;
+import cofh.lib.world.feature.FeatureGenTopBlock;
+
+import com.google.gson.JsonObject;
+
 public class SurfaceParser extends UniformParser {
 
 	@Override
 	protected List<WeightedRandomBlock> generateDefaultMaterial() {
 
-		return Arrays.asList(new WeightedRandomBlock(Blocks.stone, -1), new WeightedRandomBlock(Blocks.dirt, -1), new WeightedRandomBlock(Blocks.grass, -1),
-				new WeightedRandomBlock(Blocks.sand, -1), new WeightedRandomBlock(Blocks.gravel, -1), new WeightedRandomBlock(Blocks.snow, -1),
-				new WeightedRandomBlock(Blocks.air, -1), new WeightedRandomBlock(Blocks.water, -1));
+		return Arrays.asList(new WeightedRandomBlock(Blocks.STONE, -1), new WeightedRandomBlock(Blocks.DIRT, -1), new WeightedRandomBlock(Blocks.GRASS, -1),
+				new WeightedRandomBlock(Blocks.SAND, -1), new WeightedRandomBlock(Blocks.GRAVEL, -1), new WeightedRandomBlock(Blocks.SNOW, -1),
+				new WeightedRandomBlock(Blocks.AIR, -1), new WeightedRandomBlock(Blocks.WATER, -1));
 	}
 
 	@Override

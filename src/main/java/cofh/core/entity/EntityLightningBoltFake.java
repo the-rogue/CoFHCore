@@ -1,11 +1,13 @@
 package cofh.core.entity;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import net.minecraft.entity.effect.EntityWeatherEffect;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityLightningBoltFake extends EntityWeatherEffect {
 
@@ -31,8 +33,8 @@ public class EntityLightningBoltFake extends EntityWeatherEffect {
 		super.onUpdate();
 
 		if (this.lightningState == 2) {
-			this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "ambient.weather.thunder", 10000.0F, 0.8F + this.rand.nextFloat() * 0.2F);
-			this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "random.explode", 2.0F, 0.5F + this.rand.nextFloat() * 0.2F);
+			this.worldObj.playSound(this.posX, this.posY, this.posZ, SoundEvent.REGISTRY.getObject(new ResourceLocation("ambient.weather.thunder")),SoundCategory.WEATHER, 10000.0F, 0.8F + this.rand.nextFloat() * 0.2F, false);
+			this.worldObj.playSound(this.posX, this.posY, this.posZ, SoundEvent.REGISTRY.getObject(new ResourceLocation("random.explode")), SoundCategory.BLOCKS, 2.0F, 0.5F + this.rand.nextFloat() * 0.2F, false);
 		}
 
 		--this.lightningState;

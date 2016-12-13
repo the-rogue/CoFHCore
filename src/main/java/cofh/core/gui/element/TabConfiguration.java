@@ -1,5 +1,12 @@
 package cofh.core.gui.element;
 
+import java.util.List;
+
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.SoundCategory;
+
+import org.lwjgl.opengl.GL11;
+
 import cofh.CoFHCore;
 import cofh.api.tileentity.IReconfigurableFacing;
 import cofh.api.tileentity.IReconfigurableSides;
@@ -10,12 +17,6 @@ import cofh.lib.render.RenderHelper;
 import cofh.lib.util.helpers.BlockHelper;
 import cofh.lib.util.helpers.MathHelper;
 import cofh.lib.util.helpers.StringHelper;
-
-import java.util.List;
-
-import net.minecraft.client.gui.GuiScreen;
-
-import org.lwjgl.opengl.GL11;
 
 public class TabConfiguration extends TabBase {
 
@@ -150,20 +151,20 @@ public class TabConfiguration extends TabBase {
 		if (GuiScreen.isShiftKeyDown()) {
 			if (side == myTile.getFacing()) {
 				if (myTileSides.resetSides()) {
-					GuiBase.playSound("random.click", 1.0F, 0.2F);
+					GuiBase.playSound("random.click", 1.0F, 0.2F, SoundCategory.MASTER);
 				}
 			} else if (myTileSides.setSide(side, 0)) {
-				GuiBase.playSound("random.click", 1.0F, 0.4F);
+				GuiBase.playSound("random.click", 1.0F, 0.4F, SoundCategory.MASTER);
 			}
 			return;
 		}
 		if (mouseButton == 0) {
 			if (myTileSides.incrSide(side)) {
-				GuiBase.playSound("random.click", 1.0F, 0.8F);
+				GuiBase.playSound("random.click", 1.0F, 0.8F, SoundCategory.MASTER);
 			}
 		} else if (mouseButton == 1) {
 			if (myTileSides.decrSide(side)) {
-				GuiBase.playSound("random.click", 1.0F, 0.6F);
+				GuiBase.playSound("random.click", 1.0F, 0.6F, SoundCategory.MASTER);
 			}
 		}
 	}

@@ -1,17 +1,20 @@
 package cofh.core.particles;
 
 import com.google.common.base.Throwables;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.Callable;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -25,9 +28,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
+
 import org.lwjgl.opengl.GL11;
 
 public class ParticleRenderer {
+	@SuppressWarnings("unused")
 	private static ParticleRenderer instance = new ParticleRenderer();
 
 	private ParticleRenderer() {
@@ -83,12 +88,12 @@ public class ParticleRenderer {
 					} catch (Throwable throwable) {
 						CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Rendering Particle");
 						CrashReportCategory crashreportcategory = crashreport.makeCategory("Particle being rendered");
-						crashreportcategory.addCrashSectionCallable("Particle", new Callable() {
+						crashreportcategory.addCrashSectionCallable("Particle", new Callable<Object>() {
 							public String call() {
 								return particleBase.toString();
 							}
 						});
-						crashreportcategory.addCrashSectionCallable("Particle Type", new Callable() {
+						crashreportcategory.addCrashSectionCallable("Particle Type", new Callable<Object>() {
 							public String call() {
 								return particleBase.location.toString();
 							}

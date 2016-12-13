@@ -1,5 +1,32 @@
 package cofh;
 
+import java.io.File;
+import java.util.ArrayList;
+
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.CustomProperty;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.RecipeSorter;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import cofh.core.CoFHProps;
 import cofh.core.Proxy;
 import cofh.core.RegistryEnderAttuned;
@@ -29,33 +56,6 @@ import cofh.core.world.WorldHandler;
 import cofh.lib.util.helpers.SecurityHelper;
 import cofh.mod.BaseMod;
 import cofh.mod.updater.UpdateManager;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.CustomProperty;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.network.NetworkRegistry;
-
-import java.io.File;
-import java.util.ArrayList;
-
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.RecipeSorter;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @Mod(modid = CoFHCore.modId, name = CoFHCore.modName, version = CoFHCore.version, dependencies = CoFHCore.dependencies, guiFactory = CoFHCore.modGuiFactory,
 		customProperties = @CustomProperty(k = "cofhversion", v = "true"))
@@ -63,8 +63,8 @@ public class CoFHCore extends BaseMod {
 
 	public static final String modId = "CoFHCore";
 	public static final String modName = "CoFH Core";
-	public static final String version = "1.7.10R3.1.3";
-	public static final String version_max = "1.7.10R3.2.0";
+	public static final String version = "1.10.2R4.0.1";
+	public static final String version_max = "1.10.2R4.0.1";
 	public static final String dependencies = CoFHProps.FORGE_DEP;
 	public static final String modGuiFactory = "cofh.core.gui.GuiConfigCoreFactory";
 
@@ -202,9 +202,9 @@ public class CoFHCore extends BaseMod {
 
 	public void registerOreDictionaryEntries() {
 
-		registerOreDictionaryEntry("blockCloth", new ItemStack(Blocks.wool, 1, OreDictionary.WILDCARD_VALUE));
-		registerOreDictionaryEntry("coal", new ItemStack(Items.coal, 1, 0));
-		registerOreDictionaryEntry("charcoal", new ItemStack(Items.coal, 1, 1));
+		registerOreDictionaryEntry("blockCloth", new ItemStack(Blocks.WOOL, 1, OreDictionary.WILDCARD_VALUE));
+		registerOreDictionaryEntry("coal", new ItemStack(Items.COAL, 1, 0));
+		registerOreDictionaryEntry("charcoal", new ItemStack(Items.COAL, 1, 1));
 	}
 
 	private boolean registerOreDictionaryEntry(String oreName, ItemStack ore) {

@@ -1,12 +1,11 @@
 package cofh.core.entity;
 
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
-
 import io.netty.buffer.ByteBuf;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
 public class EntityCoFHArrow extends EntityArrow implements IEntityAdditionalSpawnData {
 
@@ -22,12 +21,7 @@ public class EntityCoFHArrow extends EntityArrow implements IEntityAdditionalSpa
 
 	public EntityCoFHArrow(World world, EntityLivingBase shooter, EntityLivingBase target, float speed, float variance) {
 
-		super(world, shooter, target, speed, variance);
-	}
-
-	public EntityCoFHArrow(World world, EntityLivingBase shooter, float speed) {
-
-		super(world, shooter, speed);
+		super(world, shooter);
 	}
 
 	@Override
@@ -52,6 +46,13 @@ public class EntityCoFHArrow extends EntityArrow implements IEntityAdditionalSpa
 
 		prevRotationPitch = rotationPitch = buffer.readFloat();
 		prevRotationYaw = rotationYaw = buffer.readFloat();
+	}
+
+	@Override
+	protected ItemStack getArrowStack()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

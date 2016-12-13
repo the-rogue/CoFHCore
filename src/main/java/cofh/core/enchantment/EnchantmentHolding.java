@@ -1,16 +1,16 @@
 package cofh.core.enchantment;
 
 import cofh.api.item.IInventoryContainerItem;
-
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnumEnchantmentType;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 
 public class EnchantmentHolding extends Enchantment {
 
-	public EnchantmentHolding(int id) {
-
-		super(id, 2, EnumEnchantmentType.all);
+	public EnchantmentHolding(Rarity rarity, EntityEquipmentSlot[] slots) {
+		
+		super(rarity, EnumEnchantmentType.ALL, slots);
 	}
 
 	@Override

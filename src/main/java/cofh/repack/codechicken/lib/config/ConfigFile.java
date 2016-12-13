@@ -1,134 +1,116 @@
 package cofh.repack.codechicken.lib.config;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 
 public class ConfigFile extends ConfigTagParent {
+    public static final byte[] crlf = new byte[] { 0xD, 0xA };
 
-	public static final byte[] crlf = new byte[] { 0xD, 0xA };
+    public File file;
+    private boolean loading;
 
-	public File file;
-	private boolean loading;
+    public ConfigFile(File file) {
+        newlinemode = 2;
+        load(file);
+    }
 
-	public ConfigFile(File file) {
+    protected ConfigFile() {
+    }
 
-		newlinemode = 2;
-		load(file);
-	}
+    protected void load(File file) {
+        try {
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.file = file;
+        loadConfig();
+    }
 
-	protected ConfigFile() {
+    protected void loadConfig() {
+        loading = true;
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(file));
 
-	}
+            while (true) {
+                reader.mark(2000);
+                String line = reader.readLine();
+                if (line != null && line.startsWith("#")) {
+                    if (comment == null || comment.equals("")) {
+                        comment = line.substring(1);
+                    } else {
+                        comment = comment + "\n" + line.substring(1);
+                    }
+                } else {
+                    reader.reset();
+                    break;
+                }
+            }
+            loadChildren(reader);
+            reader.close();
 
-	protected void load(File file) {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-		try {
-			if (!file.getParentFile().exists()) {
-				file.getParentFile().mkdirs();
-			}
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		this.file = file;
-		loadConfig();
-	}
+        loading = false;
+    }
 
-	protected void loadConfig() {
+    @Override
+    public ConfigFile setComment(String header) {
+        super.setComment(header);
+        return this;
+    }
 
-		loading = true;
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(file));
+    @Override
+    public ConfigFile setSortMode(int mode) {
+        super.setSortMode(mode);
+        return this;
+    }
 
-			while (true) {
-				reader.mark(2000);
-				String line = reader.readLine();
-				if (line != null && line.startsWith("#")) {
-					if (comment == null || comment.equals("")) {
-						comment = line.substring(1);
-					} else {
-						comment = comment + "\n" + line.substring(1);
-					}
-				} else {
-					reader.reset();
-					break;
-				}
-			}
-			loadChildren(reader);
-			reader.close();
+    @Override
+    public String getNameQualifier() {
+        return "";
+    }
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+    public static String readLine(BufferedReader reader) throws IOException {
+        String line = reader.readLine();
+        return line == null ? null : line.replace("\t", "");
+    }
 
-		loading = false;
-	}
+    public static void writeLine(PrintWriter writer, String line, int tabs) {
+        for (int i = 0; i < tabs; i++) {
+            writer.print('\t');
+        }
 
-	@Override
-	public ConfigFile setComment(String header) {
+        writer.println(line);
+    }
 
-		super.setComment(header);
-		return this;
-	}
+    public void saveConfig() {
+        if (loading) {
+            return;
+        }
 
-	@Override
-	public ConfigFile setSortMode(int mode) {
+        PrintWriter writer;
+        try {
+            writer = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
-		super.setSortMode(mode);
-		return this;
-	}
+        writeComment(writer, 0);
+        ConfigFile.writeLine(writer, "", 0);
+        saveTagTree(writer, 0, "");
+        writer.flush();
+        writer.close();
+    }
 
-	@Override
-	public String getNameQualifier() {
-
-		return "";
-	}
-
-	public static String readLine(BufferedReader reader) throws IOException {
-
-		String line = reader.readLine();
-		return line == null ? null : line.replace("\t", "");
-	}
-
-	public static void writeLine(PrintWriter writer, String line, int tabs) {
-
-		for (int i = 0; i < tabs; i++) {
-			writer.print('\t');
-		}
-
-		writer.println(line);
-	}
-
-	@Override
-	public void saveConfig() {
-
-		if (loading) {
-			return;
-		}
-
-		PrintWriter writer;
-		try {
-			writer = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-
-		writeComment(writer, 0);
-		ConfigFile.writeLine(writer, "", 0);
-		saveTagTree(writer, 0, "");
-		writer.flush();
-		writer.close();
-	}
-
-	public boolean isLoading() {
-
-		return loading;
-	}
+    public boolean isLoading() {
+        return loading;
+    }
 }

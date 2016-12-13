@@ -1,8 +1,5 @@
 package cofh.core.entity;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import java.util.List;
 
 import net.minecraft.block.material.Material;
@@ -15,13 +12,21 @@ import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.item.ItemFishingRod;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootTableList;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class EntityCoFHFishHook extends EntityFishHook {
 
@@ -52,90 +57,85 @@ public class EntityCoFHFishHook extends EntityFishHook {
 
 		onEntityUpdate();
 
-		if (this.field_146055_aB > 0) {
-			double d7 = this.posX + (this.field_146056_aC - this.posX) / this.field_146055_aB;
-			double d8 = this.posY + (this.field_146057_aD - this.posY) / this.field_146055_aB;
-			double d9 = this.posZ + (this.field_146058_aE - this.posZ) / this.field_146055_aB;
-			double d1 = MathHelper.wrapAngleTo180_double(this.field_146059_aF - this.rotationYaw);
-			this.rotationYaw = (float) (this.rotationYaw + d1 / this.field_146055_aB);
-			this.rotationPitch = (float) (this.rotationPitch + (this.field_146060_aG - this.rotationPitch) / this.field_146055_aB);
-			--this.field_146055_aB;
+		if (this.fishPosRotationIncrements > 0) {
+			double d7 = this.posX + (this.fishX - this.posX) / this.fishPosRotationIncrements;
+			double d8 = this.posY + (this.fishY - this.posY) / this.fishPosRotationIncrements;
+			double d9 = this.posZ + (this.fishZ - this.posZ) / this.fishPosRotationIncrements;
+			double d1 = MathHelper.wrapDegrees(this.fishYaw - this.rotationYaw);
+			this.rotationYaw = (float) (this.rotationYaw + d1 / this.fishPosRotationIncrements);
+			this.rotationPitch = (float) (this.rotationPitch + (this.fishPitch - this.rotationPitch) / this.fishPosRotationIncrements);
+			--this.fishPosRotationIncrements;
 			this.setPosition(d7, d8, d9);
 			this.setRotation(this.rotationYaw, this.rotationPitch);
 		} else {
 			if (!this.worldObj.isRemote) {
-				ItemStack itemstack = this.field_146042_b.getCurrentEquippedItem();
-
-				if (this.field_146042_b.isDead || !this.field_146042_b.isEntityAlive() || itemstack == null || !(itemstack.getItem() instanceof ItemFishingRod)
-						|| this.getDistanceSqToEntity(this.field_146042_b) > 1024.0D) {
+				ItemStack itemstack = this.angler.getHeldItemMainhand();
+				if (this.angler.isDead || !this.angler.isEntityAlive() || itemstack == null || !(itemstack.getItem() instanceof ItemFishingRod)
+						|| this.getDistanceSqToEntity(this.angler) > 1024.0D) {
 					this.setDead();
-					this.field_146042_b.fishEntity = null;
+					this.angler.fishEntity = null;
 					return;
 				}
 
-				if (this.field_146043_c != null) {
-					if (!this.field_146043_c.isDead) {
-						this.posX = this.field_146043_c.posX;
-						this.posY = this.field_146043_c.boundingBox.minY + this.field_146043_c.height * 0.8D;
-						this.posZ = this.field_146043_c.posZ;
+				if (this.caughtEntity != null) {
+					if (!this.caughtEntity.isDead) {
+						this.posX = this.caughtEntity.posX;
+						this.posY = this.caughtEntity.getEntityBoundingBox().minY + this.caughtEntity.height * 0.8D;
+						this.posZ = this.caughtEntity.posZ;
 						return;
 					}
 
-					this.field_146043_c = null;
+					this.caughtEntity = null;
 				}
 			}
 
-			if (this.field_146044_a > 0) {
-				--this.field_146044_a;
-			}
+			if (this.inGround) {
+				if (this.worldObj.getBlockState(field_189740_d).getBlock() == this.inTile) {
+					++this.ticksInGround;
 
-			if (this.field_146051_au) {
-				if (this.worldObj.getBlock(this.field_146037_g, this.field_146048_h, this.field_146050_i) == this.field_146046_j) {
-					++this.field_146049_av;
-
-					if (this.field_146049_av == 1200) {
+					if (this.ticksInGround == 1200) {
 						this.setDead();
 					}
 
 					return;
 				}
 
-				this.field_146051_au = false;
+				this.inGround = false;
 				this.motionX *= this.rand.nextFloat() * 0.2F;
 				this.motionY *= this.rand.nextFloat() * 0.2F;
 				this.motionZ *= this.rand.nextFloat() * 0.2F;
-				this.field_146049_av = 0;
-				this.field_146047_aw = 0;
+				this.ticksInGround = 0;
+				this.ticksInAir = 0;
 			} else {
-				++this.field_146047_aw;
+				++this.ticksInAir;
 			}
 
-			Vec3 vec31 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-			Vec3 vec3 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-			MovingObjectPosition movingobjectposition = this.worldObj.rayTraceBlocks(vec31, vec3);
-			vec31 = Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-			vec3 = Vec3.createVectorHelper(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+			Vec3d vec31 = new Vec3d(this.posX, this.posY, this.posZ);
+			Vec3d vec3 = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+			RayTraceResult rayTraceResult = this.worldObj.rayTraceBlocks(vec31, vec3);
+			vec31 = new Vec3d(this.posX, this.posY, this.posZ);
+			vec3 = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
-			if (movingobjectposition != null) {
-				vec3 = Vec3.createVectorHelper(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
+			if (rayTraceResult != null) {
+				vec3 = new Vec3d(rayTraceResult.hitVec.xCoord, rayTraceResult.hitVec.yCoord, rayTraceResult.hitVec.zCoord);
 			}
 
 			Entity entity = null;
-			List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ)
+			List<?> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().addCoord(this.motionX, this.motionY, this.motionZ)
 					.expand(1.0D, 1.0D, 1.0D));
 			double d0 = 0.0D;
 			double d2;
 
 			for (int i = 0; i < list.size(); i++) {
-				Entity entity1 = list.get(i);
+				Entity entity1 = (Entity) list.get(i);
 
-				if (entity1.canBeCollidedWith() && (entity1 != this.field_146042_b || this.field_146047_aw >= 5)) {
+				if (entity1.canBeCollidedWith() && (entity1 != this.angler || this.ticksInAir >= 5)) {
 					float f = 0.3F;
-					AxisAlignedBB axisalignedbb = entity1.boundingBox.expand(f, f, f);
-					MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(vec31, vec3);
+					AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().expand(f, f, f);
+					RayTraceResult rayTraceResult1 = axisalignedbb.calculateIntercept(vec31, vec3);
 
-					if (movingobjectposition1 != null) {
-						d2 = vec31.distanceTo(movingobjectposition1.hitVec);
+					if (rayTraceResult1 != null) {
+						d2 = vec31.distanceTo(rayTraceResult1.hitVec);
 
 						if (d2 < d0 || d0 == 0.0D) {
 							entity = entity1;
@@ -146,20 +146,20 @@ public class EntityCoFHFishHook extends EntityFishHook {
 			}
 
 			if (entity != null) {
-				movingobjectposition = new MovingObjectPosition(entity);
+				rayTraceResult = new RayTraceResult(entity);
 			}
 
-			if (movingobjectposition != null) {
-				if (movingobjectposition.entityHit != null) {
-					if (movingobjectposition.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this, this.field_146042_b), 0.0F)) {
-						this.field_146043_c = movingobjectposition.entityHit;
+			if (rayTraceResult != null) {
+				if (rayTraceResult.entityHit != null) {
+					if (rayTraceResult.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this, this.angler), 0.0F)) {
+						this.caughtEntity = rayTraceResult.entityHit;
 					}
 				} else {
-					this.field_146051_au = true;
+					this.inGround = true;
 				}
 			}
 
-			if (!this.field_146051_au) {
+			if (!this.inGround) {
 				this.moveEntity(this.motionX, this.motionY, this.motionZ);
 				float f5 = MathHelper.sqrt_double(this.motionX * this.motionX + this.motionZ * this.motionZ);
 				this.rotationYaw = (float) (Math.atan2(this.motionX, this.motionZ) * 180.0D / Math.PI);
@@ -192,12 +192,12 @@ public class EntityCoFHFishHook extends EntityFishHook {
 				double d10 = 0.0D;
 
 				for (int j = 0; j < b0; ++j) {
-					double d3 = this.boundingBox.minY + (this.boundingBox.maxY - this.boundingBox.minY) * (j + 0) / b0 - 0.125D + 0.125D;
-					double d4 = this.boundingBox.minY + (this.boundingBox.maxY - this.boundingBox.minY) * (j + 1) / b0 - 0.125D + 0.125D;
-					AxisAlignedBB axisalignedbb1 = AxisAlignedBB.getBoundingBox(this.boundingBox.minX, d3, this.boundingBox.minZ, this.boundingBox.maxX, d4,
-							this.boundingBox.maxZ);
+					double d3 = this.getEntityBoundingBox().minY + (this.getEntityBoundingBox().maxY - this.getEntityBoundingBox().minY) * (j + 0) / b0 - 0.125D + 0.125D;
+					double d4 = this.getEntityBoundingBox().minY + (this.getEntityBoundingBox().maxY - this.getEntityBoundingBox().minY) * (j + 1) / b0 - 0.125D + 0.125D;
+					AxisAlignedBB axisalignedbb1 = new AxisAlignedBB(this.getEntityBoundingBox().minX, d3, this.getEntityBoundingBox().minZ, this.getEntityBoundingBox().maxX, d4,
+							this.getEntityBoundingBox().maxZ);
 
-					if (this.worldObj.isAABBInMaterial(axisalignedbb1, Material.water)) {
+					if (this.worldObj.isAABBInMaterial(axisalignedbb1, Material.WATER)) {
 						d10 += 1.0D / b0;
 					}
 				}
@@ -205,25 +205,22 @@ public class EntityCoFHFishHook extends EntityFishHook {
 				if (!this.worldObj.isRemote && d10 > 0.0D) {
 					WorldServer worldserver = (WorldServer) this.worldObj;
 					int k = 1;
+					BlockPos isatpos = new BlockPos(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY) + 1, MathHelper.floor_double(this.posZ));
 
-					if (this.rand.nextFloat() < 0.25F
-							&& this.worldObj.canLightningStrikeAt(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY) + 1,
-									MathHelper.floor_double(this.posZ))) {
+					if (this.rand.nextFloat() < 0.25F && this.worldObj.isRainingAt(isatpos)) {
 						k = 2;
 					}
 
-					if (this.rand.nextFloat() < 0.5F
-							&& !this.worldObj.canBlockSeeTheSky(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY) + 1,
-									MathHelper.floor_double(this.posZ))) {
+					if (this.rand.nextFloat() < 0.5F && !this.worldObj.canSeeSky(isatpos)) {
 						--k;
 					}
 
-					if (this.field_146045_ax > 0) {
-						--this.field_146045_ax;
+					if (this.ticksCatchable > 0) {
+						--this.ticksCatchable;
 
-						if (this.field_146045_ax <= 0) {
-							this.field_146040_ay = 0;
-							this.field_146038_az = 0;
+						if (this.ticksCatchable <= 0) {
+							this.ticksCaughtDelay = 0;
+							this.ticksCatchableDelay = 0;
 						}
 					} else {
 						float f1;
@@ -233,68 +230,68 @@ public class EntityCoFHFishHook extends EntityFishHook {
 						float f7;
 						double d11;
 
-						if (this.field_146038_az > 0) {
-							this.field_146038_az -= k;
+						if (this.ticksCatchableDelay > 0) {
+							this.ticksCatchableDelay -= k;
 
-							if (this.field_146038_az <= 0) {
+							if (this.ticksCatchableDelay <= 0) {
 								this.motionY -= 0.20000000298023224D;
-								this.playSound("random.splash", 0.25F, 1.0F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
-								f1 = MathHelper.floor_double(this.boundingBox.minY);
-								worldserver.func_147487_a("bubble", this.posX, f1 + 1.0F, this.posZ, (int) (1.0F + this.width * 20.0F), this.width, 0.0D,
+								this.playSound(SoundEvent.REGISTRY.getObject(new ResourceLocation("random.splash")), 0.25F, 1.0F + (this.rand.nextFloat() - this.rand.nextFloat()) * 0.4F);
+								f1 = MathHelper.floor_double(this.getEntityBoundingBox().minY);
+								worldserver.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX, f1 + 1.0F, this.posZ, (int) (1.0F + this.width * 20.0F), this.width, 0.0D,
 										this.width, 0.20000000298023224D);
-								worldserver.func_147487_a("wake", this.posX, f1 + 1.0F, this.posZ, (int) (1.0F + this.width * 20.0F), this.width, 0.0D,
+								worldserver.spawnParticle(EnumParticleTypes.WATER_WAKE, this.posX, f1 + 1.0F, this.posZ, (int) (1.0F + this.width * 20.0F), this.width, 0.0D,
 										this.width, 0.20000000298023224D);
-								this.field_146045_ax = MathHelper.getRandomIntegerInRange(this.rand, 10, 30);
+								this.ticksCatchable = MathHelper.getRandomIntegerInRange(this.rand, 10, 30);
 							} else {
-								this.field_146054_aA = (float) (this.field_146054_aA + this.rand.nextGaussian() * 4.0D);
-								f1 = this.field_146054_aA * 0.017453292F;
+								this.fishApproachAngle = (float) (this.fishApproachAngle + this.rand.nextGaussian() * 4.0D);
+								f1 = this.fishApproachAngle * 0.017453292F;
 								f7 = MathHelper.sin(f1);
 								f2 = MathHelper.cos(f1);
-								d11 = this.posX + f7 * this.field_146038_az * 0.1F;
-								d5 = MathHelper.floor_double(this.boundingBox.minY) + 1.0F;
-								d6 = this.posZ + f2 * this.field_146038_az * 0.1F;
+								d11 = this.posX + f7 * this.ticksCatchableDelay * 0.1F;
+								d5 = MathHelper.floor_double(this.getEntityBoundingBox().minY) + 1.0F;
+								d6 = this.posZ + f2 * this.ticksCatchableDelay * 0.1F;
 
 								if (this.rand.nextFloat() < 0.15F) {
-									worldserver.func_147487_a("bubble", d11, d5 - 0.10000000149011612D, d6, 1, f7, 0.1D, f2, 0.0D);
+									worldserver.spawnParticle(EnumParticleTypes.WATER_BUBBLE, d11, d5 - 0.10000000149011612D, d6, 1, f7, 0.1D, f2, 0.0D);
 								}
 
 								float f3 = f7 * 0.04F;
 								float f4 = f2 * 0.04F;
-								worldserver.func_147487_a("wake", d11, d5, d6, 0, f4, 0.01D, (-f3), 1.0D);
-								worldserver.func_147487_a("wake", d11, d5, d6, 0, (-f4), 0.01D, f3, 1.0D);
+								worldserver.spawnParticle(EnumParticleTypes.WATER_WAKE, d11, d5, d6, 0, f4, 0.01D, (-f3), 1.0D);
+								worldserver.spawnParticle(EnumParticleTypes.WATER_WAKE, d11, d5, d6, 0, (-f4), 0.01D, f3, 1.0D);
 							}
-						} else if (this.field_146040_ay != 0) {
-							this.field_146040_ay -= k;
+						} else if (this.ticksCaughtDelay != 0) {
+							this.ticksCaughtDelay -= k;
 							f1 = 0.15F;
 
-							if (this.field_146040_ay < 20) {
-								f1 = (float) (f1 + (20 - this.field_146040_ay) * 0.05D);
-							} else if (this.field_146040_ay < 40) {
-								f1 = (float) (f1 + (40 - this.field_146040_ay) * 0.02D);
-							} else if (this.field_146040_ay < 60) {
-								f1 = (float) (f1 + (60 - this.field_146040_ay) * 0.01D);
+							if (this.ticksCaughtDelay < 20) {
+								f1 = (float) (f1 + (20 - this.ticksCaughtDelay) * 0.05D);
+							} else if (this.ticksCaughtDelay < 40) {
+								f1 = (float) (f1 + (40 - this.ticksCaughtDelay) * 0.02D);
+							} else if (this.ticksCaughtDelay < 60) {
+								f1 = (float) (f1 + (60 - this.ticksCaughtDelay) * 0.01D);
 							}
 
 							if (this.rand.nextFloat() < f1) {
 								f7 = MathHelper.randomFloatClamp(this.rand, 0.0F, 360.0F) * 0.017453292F;
 								f2 = MathHelper.randomFloatClamp(this.rand, 25.0F, 60.0F);
 								d11 = this.posX + MathHelper.sin(f7) * f2 * 0.1F;
-								d5 = MathHelper.floor_double(this.boundingBox.minY) + 1.0F;
+								d5 = MathHelper.floor_double(this.getEntityBoundingBox().minY) + 1.0F;
 								d6 = this.posZ + MathHelper.cos(f7) * f2 * 0.1F;
-								worldserver.func_147487_a("splash", d11, d5, d6, 2 + this.rand.nextInt(2), 0.10000000149011612D, 0.0D, 0.10000000149011612D,
+								worldserver.spawnParticle(EnumParticleTypes.WATER_SPLASH, d11, d5, d6, 2 + this.rand.nextInt(2), 0.10000000149011612D, 0.0D, 0.10000000149011612D,
 										0.0D);
 							}
-							if (this.field_146040_ay <= 0) {
-								this.field_146054_aA = MathHelper.randomFloatClamp(this.rand, 0.0F, 360.0F);
-								this.field_146038_az = MathHelper.getRandomIntegerInRange(this.rand, 20, 80);
+							if (this.ticksCaughtDelay <= 0) {
+								this.fishApproachAngle = MathHelper.randomFloatClamp(this.rand, 0.0F, 360.0F);
+								this.ticksCatchableDelay = MathHelper.getRandomIntegerInRange(this.rand, 20, 80);
 							}
 						} else {
-							this.field_146040_ay = MathHelper.getRandomIntegerInRange(this.rand, 100, 900);
-							this.field_146040_ay -= (EnchantmentHelper.func_151387_h(this.field_146042_b) + speedModifier) * 20 * 5;
+							this.ticksCaughtDelay = MathHelper.getRandomIntegerInRange(this.rand, 100, 900);
+							this.ticksCaughtDelay -= (EnchantmentHelper.getLuckOfSeaModifier(this.angler) + speedModifier) * 20 * 5;
 						}
 					}
 
-					if (this.field_146045_ax > 0) {
+					if (this.ticksCatchable > 0) {
 						this.motionY -= this.rand.nextFloat() * this.rand.nextFloat() * this.rand.nextFloat() * 0.2D;
 					}
 				}
@@ -326,55 +323,50 @@ public class EntityCoFHFishHook extends EntityFishHook {
 	}
 
 	@Override
-	public int func_146034_e() {
+	public int handleHookRetraction() {
 
 		if (this.worldObj.isRemote) {
 			return 0;
 		} else {
 			byte b0 = 0;
 
-			if (this.field_146043_c != null) {
-				double d0 = this.field_146042_b.posX - this.posX;
-				double d2 = this.field_146042_b.posY - this.posY;
-				double d4 = this.field_146042_b.posZ - this.posZ;
+			if (this.caughtEntity != null) {
+				double d0 = this.angler.posX - this.posX;
+				double d2 = this.angler.posY - this.posY;
+				double d4 = this.angler.posZ - this.posZ;
 				double d6 = MathHelper.sqrt_double(d0 * d0 + d2 * d2 + d4 * d4);
 				double d8 = 0.1D;
-				this.field_146043_c.motionX += d0 * d8;
-				this.field_146043_c.motionY += d2 * d8 + MathHelper.sqrt_double(d6) * 0.08D;
-				this.field_146043_c.motionZ += d4 * d8;
+				this.caughtEntity.motionX += d0 * d8;
+				this.caughtEntity.motionY += d2 * d8 + MathHelper.sqrt_double(d6) * 0.08D;
+				this.caughtEntity.motionZ += d4 * d8;
 				b0 = 3;
-			} else if (this.field_146045_ax > 0) {
-				EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, this.func_146033_f());
-				double d1 = this.field_146042_b.posX - this.posX;
-				double d3 = this.field_146042_b.posY - this.posY;
-				double d5 = this.field_146042_b.posZ - this.posZ;
-				double d7 = MathHelper.sqrt_double(d1 * d1 + d3 * d3 + d5 * d5);
-				double d9 = 0.1D;
-				entityitem.motionX = d1 * d9;
-				entityitem.motionY = d3 * d9 + MathHelper.sqrt_double(d7) * 0.08D;
-				entityitem.motionZ = d5 * d9;
-				this.worldObj.spawnEntityInWorld(entityitem);
-				this.field_146042_b.worldObj.spawnEntityInWorld(new EntityXPOrb(this.field_146042_b.worldObj, this.field_146042_b.posX,
-						this.field_146042_b.posY + 0.5D, this.field_146042_b.posZ + 0.5D, this.rand.nextInt(6) + 1));
-				b0 = 1;
+			} else if (this.ticksCatchable > 0) {
+				LootContext.Builder lootcontext$builder = new LootContext.Builder((WorldServer)this.worldObj);
+                lootcontext$builder.withLuck((float)EnchantmentHelper.getLuckOfSeaModifier(this.angler) + this.angler.getLuck());
+
+                for (ItemStack itemstack : this.worldObj.getLootTableManager().getLootTableFromLocation(LootTableList.GAMEPLAY_FISHING).generateLootForPools(this.rand, lootcontext$builder.build()))
+                {
+                	EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, itemstack);
+                	double d1 = this.angler.posX - this.posX;
+                	double d3 = this.angler.posY - this.posY;
+                	double d5 = this.angler.posZ - this.posZ;
+                	double d7 = MathHelper.sqrt_double(d1 * d1 + d3 * d3 + d5 * d5);
+                	double d9 = 0.1D;
+                	entityitem.motionX = d1 * d9;
+                	entityitem.motionY = d3 * d9 + MathHelper.sqrt_double(d7) * 0.08D;
+                	entityitem.motionZ = d5 * d9;
+                	this.worldObj.spawnEntityInWorld(entityitem);
+                	this.angler.worldObj.spawnEntityInWorld(new EntityXPOrb(this.angler.worldObj, this.angler.posX,
+                			this.angler.posY + 0.5D, this.angler.posZ + 0.5D, this.rand.nextInt(6) + 1));
+                	b0 = 1;
+                }
 			}
-			if (this.field_146051_au) {
+			if (this.inGround) {
 				b0 = 2;
 			}
 			this.setDead();
-			this.field_146042_b.fishEntity = null;
+			this.angler.fishEntity = null;
 			return b0;
 		}
 	}
-
-	protected ItemStack func_146033_f() {
-
-		float f = this.worldObj.rand.nextFloat();
-		int i = EnchantmentHelper.func_151386_g(this.field_146042_b) + luckModifier;
-		int j = EnchantmentHelper.func_151387_h(this.field_146042_b) + speedModifier;
-
-		this.field_146042_b.addStat(net.minecraftforge.common.FishingHooks.getFishableCategory(f, i, j).stat, 1);
-		return net.minecraftforge.common.FishingHooks.getRandomFishable(this.rand, f, i, j);
-	}
-
 }

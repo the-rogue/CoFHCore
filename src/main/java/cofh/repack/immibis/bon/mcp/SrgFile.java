@@ -15,7 +15,6 @@ public class SrgFile {
 	}
 
 	public SrgFile(File f, boolean reverse) throws IOException {
-		@SuppressWarnings("resource")
 		Scanner in = new Scanner(new BufferedReader(new FileReader(f)));
 		try {
 			while(in.hasNextLine()) {

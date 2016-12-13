@@ -1,38 +1,26 @@
 package skyboy.core.world;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldSettings;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
-public abstract class WorldServerProxy extends WorldServerShim {
+public abstract class WorldServerProxy extends WorldServer {
 
 	protected WorldServer proxiedWorld;
 
-	private static String getWorldName(World world) {
-
-		return world.getWorldInfo().getWorldName();
-	}
-
-	private static WorldSettings getWorldSettings(World world) {
-
-		return new WorldSettings(world.getWorldInfo());
-	}
-
 	public WorldServerProxy(WorldServer world) {
 
-		super(world.func_73046_m(), world.getSaveHandler(), getWorldName(world), world.provider, getWorldSettings(world), world.theProfiler);
+		super(world.getMinecraftServer(), world.getSaveHandler(), world.getWorldInfo(), world.provider.getDimension(), world.theProfiler);
 		this.proxiedWorld = world;
 		// perWorldStorage = world.perWorldStorage; // final, set in super; requires reflection
-		ReflectionHelper.setPrivateValue(World.class, this, world.perWorldStorage, "perWorldStorage"); // forge-added, no reobf
+		ReflectionHelper.setPrivateValue(World.class, this, world.getPerWorldStorage(), "perWorldStorage"); // forge-added, no reobf
 		loadedEntityList = world.loadedEntityList;
 		loadedTileEntityList = world.loadedTileEntityList;
 		playerEntities = world.playerEntities;
 		weatherEffects = world.weatherEffects;
 		rand = world.rand;
 		// provider = world.provider; // handled by super
-		mapStorage = world.mapStorage;
+		mapStorage = world.getMapStorage();
 		villageCollectionObj = world.villageCollectionObj;
 		// theProfiler = world.theProfiler; // handled by super
 		isRemote = world.isRemote;
@@ -43,17 +31,17 @@ public abstract class WorldServerProxy extends WorldServerShim {
 	protected void cofh_updateProps() {
 
 		scheduledUpdatesAreImmediate = proxiedWorld.scheduledUpdatesAreImmediate;
-		skylightSubtracted = proxiedWorld.skylightSubtracted;
+		setSkylightSubtracted(proxiedWorld.getSkylightSubtracted());
 		prevRainingStrength = proxiedWorld.prevRainingStrength;
 		rainingStrength = proxiedWorld.rainingStrength;
 		prevThunderingStrength = proxiedWorld.prevThunderingStrength;
 		thunderingStrength = proxiedWorld.thunderingStrength;
-		lastLightningBolt = proxiedWorld.lastLightningBolt;
-		difficultySetting = proxiedWorld.difficultySetting;
+		setLastLightningBolt(proxiedWorld.getLastLightningBolt());
+		getWorldInfo().setDifficulty(proxiedWorld.getWorldInfo().getDifficulty());
 		findingSpawnPoint = proxiedWorld.findingSpawnPoint;
-		theChunkProviderServer = proxiedWorld.theChunkProviderServer;
+		chunkProvider = proxiedWorld.getChunkProvider();
 		allPlayersSleeping = proxiedWorld.allPlayersSleeping;
-		levelSaving = proxiedWorld.levelSaving;
+		disableLevelSaving = proxiedWorld.disableLevelSaving;
 	}
 
 }

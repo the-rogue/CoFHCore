@@ -1,5 +1,39 @@
 package cofh.core;
 
+import java.util.BitSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.entity.RenderArrow;
+import net.minecraft.client.resources.IReloadableResourceManager;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.client.event.RenderBlockOverlayEvent;
+import net.minecraftforge.client.event.RenderBlockOverlayEvent.OverlayType;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.EXTFramebufferObject;
+
 import cofh.CoFHCore;
 import cofh.core.entity.EntityCoFHArrow;
 import cofh.core.gui.client.GuiFriendsList;
@@ -20,40 +54,6 @@ import cofh.core.sided.IRunnableServer;
 import cofh.core.util.KeyBindingEmpower;
 import cofh.core.util.KeyBindingMultiMode;
 import cofh.lib.util.helpers.StringHelper;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.client.registry.ClientRegistry;
-import cpw.mods.fml.client.registry.RenderingRegistry;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
-import java.util.BitSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundCategory;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.entity.RenderArrow;
-import net.minecraft.client.resources.IReloadableResourceManager;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.client.event.RenderBlockOverlayEvent;
-import net.minecraftforge.client.event.RenderBlockOverlayEvent.OverlayType;
-import net.minecraftforge.client.event.TextureStitchEvent;
-
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.EXTFramebufferObject;
 
 @SideOnly(Side.CLIENT)
 public class ProxyClient extends Proxy {
@@ -236,7 +236,7 @@ public class ProxyClient extends Proxy {
 	}
 
 	@Override
-	public void addIndexedChatMessage(IChatComponent chat, int index) {
+	public void addIndexedChatMessage(ITextComponent chat, int index) {
 
 		if (chat == null) {
 			Minecraft.getMinecraft().ingameGUI.getChatGUI().deleteChatLine(index);
@@ -251,16 +251,16 @@ public class ProxyClient extends Proxy {
 	@SubscribeEvent
 	public void registerIcons(TextureStitchEvent.Pre event) {
 
-		if (event.map.getTextureType() == 0) {
+		if (event.getMap().getTextureType() == 0) {
 
-		} else if (event.map.getTextureType() == 1) {
-			IconRegistry.addIcon("IconAccessFriends", "cofh:icons/Icon_Access_Friends", event.map);
-			IconRegistry.addIcon("IconAccessGuild", "cofh:icons/Icon_Access_Guild", event.map);
-			IconRegistry.addIcon("IconAccessPrivate", "cofh:icons/Icon_Access_Private", event.map);
-			IconRegistry.addIcon("IconAccessPublic", "cofh:icons/Icon_Access_Public", event.map);
-			IconRegistry.addIcon("IconAccept", "cofh:icons/Icon_Accept", event.map);
-			IconRegistry.addIcon("IconAcceptInactive", "cofh:icons/Icon_Accept_Inactive", event.map);
-			IconRegistry.addIcon("IconAugment", "cofh:icons/Icon_Augment", event.map);
+		} else if (event.getMap().getTextureType() == 1) {
+			IconRegistry.addIcon("IconAccessFriends", "cofh:icons/Icon_Access_Friends", event.getMap());
+			IconRegistry.addIcon("IconAccessGuild", "cofh:icons/Icon_Access_Guild", event.getMap());
+			IconRegistry.addIcon("IconAccessPrivate", "cofh:icons/Icon_Access_Private", event.getMap());
+			IconRegistry.addIcon("IconAccessPublic", "cofh:icons/Icon_Access_Public", event.getMap());
+			IconRegistry.addIcon("IconAccept", "cofh:icons/Icon_Accept", event.getMap());
+			IconRegistry.addIcon("IconAcceptInactive", "cofh:icons/Icon_Accept_Inactive", event.getMap());
+			IconRegistry.addIcon("IconAugment", "cofh:icons/Icon_Augment", event.getMap());
 			IconRegistry.addIcon("IconButton", "cofh:icons/Icon_Button", event.map);
 			IconRegistry.addIcon("IconButtonHighlight", "cofh:icons/Icon_Button_Highlight", event.map);
 			IconRegistry.addIcon("IconButtonInactive", "cofh:icons/Icon_Button_Inactive", event.map);

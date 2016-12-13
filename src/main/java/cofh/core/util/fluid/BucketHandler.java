@@ -1,30 +1,35 @@
 package cofh.core.util.fluid;
 
-import cofh.lib.util.BlockWrapper;
-import cofh.lib.util.ItemWrapper;
-import cofh.lib.util.helpers.ServerHelper;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import cpw.mods.fml.common.eventhandler.Event.Result;
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-
 import java.util.Map.Entry;
 
-import net.minecraft.block.Block;
+import javax.annotation.Nullable;
+
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import cofh.lib.util.BlockWrapper;
+import cofh.lib.util.ItemWrapper;
+import cofh.lib.util.helpers.ServerHelper;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
+@SuppressWarnings("deprecation")
 public class BucketHandler {
 
 	public static BucketHandler instance = new BucketHandler();
@@ -59,27 +64,23 @@ public class BucketHandler {
 
 	private void onBucketFill(FillBucketEvent event, boolean pre) {
 
-		if (ServerHelper.isClientWorld(event.world) | event.result != null || event.getResult() != Result.DEFAULT) {
+		if (ServerHelper.isClientWorld(event.getWorld()) | event.getFilledBucket() != null || event.getResult() != Result.DEFAULT) {
 			return;
 		}
-		ItemStack current = event.current;
-		if (event.target.typeOfHit != MovingObjectType.BLOCK) {
+		ItemStack current = event.getEmptyBucket();
+		if (event.getTarget().typeOfHit != RayTraceResult.Type.BLOCK) {
 			return;
 		}
 		boolean fill = true;
-		int x = event.target.blockX, y = event.target.blockY, z = event.target.blockZ, side = event.target.sideHit;
+		BlockPos pos = event.getTarget().blockPos;
+		EnumFacing side = event.getTarget().sideHit;
 
-		l: if (!current.getItem().equals(Items.bucket)) {
+		l: if (!current.getItem().equals(Items.BUCKET)) {
 			if (FluidContainerRegistry.isBucket(current)) {
-				ForgeDirection fside = ForgeDirection.getOrientation(side);
-				Block block = event.world.getBlock(x, y, z);
-				x += fside.offsetX;
-				y += fside.offsetY;
-				z += fside.offsetZ;
-				if (!block.isReplaceable(event.world, x, y, z) && block.getMaterial().isSolid()) {
-					x -= fside.offsetX;
-					y -= fside.offsetY;
-					z -= fside.offsetZ;
+				IBlockState blockstate = event.getWorld().getBlockState(pos);
+				pos.offset(side);
+				if (!blockstate.getBlock().isReplaceable(event.getWorld(), pos) && blockstate.getMaterial().isSolid()) {
+					pos.offset(side, -1);
 				}
 				fill = false;
 				break l;
@@ -88,8 +89,8 @@ public class BucketHandler {
 		}
 
 		if (pre) { // doing all of this in one pass will pre-empt other handlers. Split to two priorities.
-			if (event.entityPlayer != null) {
-				if (!event.world.canMineBlock(event.entityPlayer, x, y, z) || (fill && !event.entityPlayer.canPlayerEdit(x, y, z, side, current))) {
+			if (event.getEntityPlayer() != null) {
+				if (!event.getWorld().canMineBlockBody(event.getEntityPlayer(), pos) || (fill && !event.getEntityPlayer().canPlayerEdit(pos, side, current))) {
 					event.setCanceled(true);
 				}
 			}
@@ -98,87 +99,88 @@ public class BucketHandler {
 		ItemStack bucket = null;
 
 		if (fill) {
-			bucket = fillBucket(event.world, x, y, z);
-		} else if (emptyBucket(event.world, x, y, z, current)) {
-			bucket = new ItemStack(Items.bucket);
+			bucket = fillBucket(event.getWorld(), pos);
+		} else if (emptyBucket(event.getEntityPlayer(), event.getWorld(), pos, current)) {
+			bucket = new ItemStack(Items.BUCKET);
 		}
 		if (bucket == null) {
 			return;
 		}
-		event.result = bucket;
+		event.setFilledBucket(bucket);
 		event.setResult(Result.ALLOW);
 	}
 
-	public static boolean registerBucket(Block block, int bMeta, ItemStack bucket) {
+	public static boolean registerBucket(IBlockState blockstate, int bMeta, ItemStack bucket) {
 
-		if (block == null || bMeta < 0 || bucket == null || buckets.containsKey(new BlockWrapper(block, bMeta))) {
+		if (blockstate == null || bMeta < 0 || bucket == null || buckets.containsKey(new BlockWrapper(blockstate))) {
 			return false;
 		}
-		buckets.put(new BlockWrapper(block, bMeta), new ItemWrapper(bucket));
+		buckets.put(new BlockWrapper(blockstate), new ItemWrapper(bucket));
 		return true;
 	}
 
-	public static ItemStack fillBucket(World world, int x, int y, int z) {
+	public static ItemStack fillBucket(World world, BlockPos pos) {
 
-		Block block = world.getBlock(x, y, z);
-		int bMeta = world.getBlockMetadata(x, y, z);
+		IBlockState blockstate = world.getBlockState(pos);
 
-		if (!buckets.containsKey(new BlockWrapper(block, bMeta))) {
-			if (block.equals(Blocks.water) || block.equals(Blocks.flowing_water)) {
-				if (world.getBlockMetadata(x, y, z) == 0) {
-					world.setBlockToAir(x, y, z);
-					return new ItemStack(Items.water_bucket);
+		if (!buckets.containsKey(new BlockWrapper(blockstate))) {
+			if (blockstate.equals(Blocks.WATER) || blockstate.equals(Blocks.FLOWING_WATER)) {
+				if (world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)) == 0) {
+					world.setBlockToAir(pos);
+					return new ItemStack(Items.WATER_BUCKET);
 				}
 				return null;
-			} else if (block.equals(Blocks.lava) || block.equals(Blocks.flowing_lava)) {
-				if (world.getBlockMetadata(x, y, z) == 0) {
-					world.setBlockToAir(x, y, z);
-					return new ItemStack(Items.lava_bucket);
+			} else if (blockstate.equals(Blocks.LAVA) || blockstate.equals(Blocks.FLOWING_LAVA)) {
+				if (world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)) == 0) {
+					world.setBlockToAir(pos);
+					return new ItemStack(Items.LAVA_BUCKET);
 				}
 				return null;
 			}
-			if (block instanceof IFluidBlock) {
-				IFluidBlock flBlock = (IFluidBlock) block;
+			if (blockstate instanceof IFluidBlock) {
+				IFluidBlock flBlock = (IFluidBlock) blockstate;
 
-				if (flBlock.canDrain(world, x, y, z)) {
-					ItemStack stack = new ItemStack(Items.bucket);
-					stack = FluidContainerRegistry.fillFluidContainer(flBlock.drain(world, x, y, z, false), stack);
+				if (flBlock.canDrain(world, pos)) {
+					ItemStack stack = new ItemStack(Items.BUCKET);
+					stack = FluidContainerRegistry.fillFluidContainer(flBlock.drain(world, pos, false), stack);
 
 					if (stack != null) {
-						flBlock.drain(world, x, y, z, true);
+						flBlock.drain(world, pos, true);
 						return stack;
 					}
 				}
 			}
 			return null;
 		}
-		if (!world.setBlockToAir(x, y, z)) {
+		if (!world.setBlockToAir(pos)) {
 			return null;
 		}
-		ItemWrapper result = buckets.get(new BlockWrapper(block, bMeta));
+		ItemWrapper result = buckets.get(new BlockWrapper(blockstate));
 		return new ItemStack(result.item, 1, result.metadata);
 	}
 
-	public static boolean emptyBucket(World world, int x, int y, int z, ItemStack bucket) {
+	public static boolean emptyBucket(@Nullable EntityPlayer player,World world, BlockPos pos, ItemStack bucket) {
 
 		boolean r = false;
 		if (!buckets.inverse().containsKey(new ItemWrapper(bucket))) {
 			if (bucket.getItem() instanceof ItemBucket) {
-				r = ((ItemBucket) bucket.getItem()).tryPlaceContainedLiquid(world, x, y, z);
-				world.markBlockForUpdate(x, y, z);
+				IBlockState oldstate = world.getBlockState(pos);
+				r = ((ItemBucket) bucket.getItem()).tryPlaceContainedLiquid(player, world, pos);
+				world.notifyBlockUpdate(pos, oldstate, world.getBlockState(pos), 0);
 			}
 			return r;
 		}
 		BlockWrapper result = buckets.inverse().get(new ItemWrapper(bucket));
 
-		Material material = world.getBlock(x, y, z).getMaterial();
+		Material material = world.getBlockState(pos).getMaterial();
 		boolean solid = !material.isSolid();
-		if (world.isAirBlock(x, y, z) || solid) {
+		if (world.isAirBlock(pos) || solid) {
+			IBlockState oldstate = world.getBlockState(pos);
 			if (!world.isRemote && solid && !material.isLiquid()) {
-				world.func_147480_a(x, y, z, true);
+				world.destroyBlock(pos, true);
 			}
-			r = world.setBlock(x, y, z, result.block, result.metadata, 3); // this can fail
-			world.markBlockForUpdate(x, y, z);
+			r = world.setBlockState(pos, result.blockstate, 3); // this can fail
+			world.notifyBlockUpdate(pos, oldstate, world.getBlockState(pos), 0);
 		}
 		return r;
 	}
@@ -188,7 +190,7 @@ public class BucketHandler {
 		BiMap<BlockWrapper, ItemWrapper> tempMap = HashBiMap.create(buckets.size());
 
 		for (Entry<BlockWrapper, ItemWrapper> entry : buckets.entrySet()) {
-			BlockWrapper tempBlock = new BlockWrapper(entry.getKey().block, entry.getKey().metadata);
+			BlockWrapper tempBlock = new BlockWrapper(entry.getKey().blockstate);
 			ItemWrapper tempItem = new ItemWrapper(entry.getValue().item, entry.getValue().metadata);
 			tempMap.put(tempBlock, tempItem);
 		}

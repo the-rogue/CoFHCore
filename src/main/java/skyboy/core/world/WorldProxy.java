@@ -1,48 +1,36 @@
 package skyboy.core.world;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSettings;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 public abstract class WorldProxy extends World {
 
 	protected World proxiedWorld;
 
-	private static String getWorldName(World world) {
-
-		return world.getWorldInfo().getWorldName();
-	}
-
-	private static WorldSettings getWorldSettings(World world) {
-
-		return new WorldSettings(world.getWorldInfo());
-	}
-
 	public WorldProxy(World world) {
 
-		super(world.getSaveHandler(), getWorldName(world), world.provider, getWorldSettings(world), world.theProfiler);
+		super(world.getSaveHandler(), world.getWorldInfo(), world.provider, world.theProfiler, world.isRemote);
 		this.proxiedWorld = world;
 		// perWorldStorage = world.perWorldStorage; // final, set in super; requires reflection
-		ReflectionHelper.setPrivateValue(World.class, this, world.perWorldStorage, new String[] { "perWorldStorage" }); // forge-added, no reobf
+		ReflectionHelper.setPrivateValue(World.class, this, world.getPerWorldStorage(), new String[] { "perWorldStorage" }); // forge-added, no reobf
 		scheduledUpdatesAreImmediate = world.scheduledUpdatesAreImmediate;
 		loadedEntityList = world.loadedEntityList;
 		loadedTileEntityList = world.loadedTileEntityList;
 		playerEntities = world.playerEntities;
 		weatherEffects = world.weatherEffects;
-		skylightSubtracted = world.skylightSubtracted;
+		setSkylightSubtracted(world.getSkylightSubtracted());
 		prevRainingStrength = world.prevRainingStrength;
 		rainingStrength = world.rainingStrength;
 		prevThunderingStrength = world.prevThunderingStrength;
 		thunderingStrength = world.thunderingStrength;
-		lastLightningBolt = world.lastLightningBolt;
-		difficultySetting = world.difficultySetting;
+		setLastLightningBolt(world.getLastLightningBolt());
+		getWorldInfo().setDifficulty(world.getWorldInfo().getDifficulty());
 		rand = world.rand;
 		// provider = world.provider; // handled by super
 		findingSpawnPoint = world.findingSpawnPoint;
-		mapStorage = world.mapStorage;
+		mapStorage = world.getMapStorage();
 		villageCollectionObj = world.villageCollectionObj;
 		// theProfiler = world.theProfiler; // handled by super
 		isRemote = world.isRemote;
@@ -59,11 +47,4 @@ public abstract class WorldProxy extends World {
 
 		return null;
 	}
-
-	@Override
-	public int func_152379_p() {
-
-		return 0;
-	}
-
 }
