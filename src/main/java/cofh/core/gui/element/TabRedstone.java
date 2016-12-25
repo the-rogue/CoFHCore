@@ -1,17 +1,18 @@
 package cofh.core.gui.element;
 
+import java.util.List;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
+
+import org.lwjgl.opengl.GL11;
+
 import cofh.CoFHCore;
 import cofh.api.tileentity.IRedstoneControl;
 import cofh.lib.gui.GuiBase;
 import cofh.lib.gui.element.TabBase;
 import cofh.lib.util.helpers.MathHelper;
 import cofh.lib.util.helpers.StringHelper;
-
-import java.util.List;
-
-import net.minecraft.util.SoundCategory;
-
-import org.lwjgl.opengl.GL11;
 
 public class TabRedstone extends TabBase {
 
@@ -133,7 +134,7 @@ public class TabRedstone extends TabBase {
 	@Override
 	protected void drawForeground() {
 
-		drawTabIcon("IconRedstone");
+		drawTabIcon(new ResourceLocation("minecraft:items/redstone_dust"));
 		if (!isFullyOpened()) {
 			return;
 		}
@@ -142,23 +143,23 @@ public class TabRedstone extends TabBase {
 		getFontRenderer().drawStringWithShadow(StringHelper.localize("info.cofh.signalRequired") + ":", posXOffset() + 6, posY + 66, subheaderColor);
 
 		if (myContainer.getControl().isDisabled()) {
-			gui.drawButton("IconGunpowder", posX() + 28, posY + 20, 1, 1);
-			gui.drawButton("IconRSTorchOff", posX() + 48, posY + 20, 1, 0);
-			gui.drawButton("IconRSTorchOn", posX() + 68, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("minecraft:items/gunpowder"), posX() + 28, posY + 20, 1, 1);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_RSTorchOff"), posX() + 48, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_RSTorchOn"), posX() + 68, posY + 20, 1, 0);
 			getFontRenderer().drawString(StringHelper.localize("info.cofh.disabled"), posXOffset() + 14, posY + 54, textColor);
 			getFontRenderer().drawString(StringHelper.localize("info.cofh.ignored"), posXOffset() + 14, posY + 78, textColor);
 		} else {
 			getFontRenderer().drawString(StringHelper.localize("info.cofh.enabled"), posXOffset() + 14, posY + 54, textColor);
 
 			if (myContainer.getControl().isLow()) {
-				gui.drawButton("IconRedstone", posX() + 28, posY + 20, 1, 0);
-				gui.drawButton("IconRSTorchOff", posX() + 48, posY + 20, 1, 1);
-				gui.drawButton("IconRSTorchOn", posX() + 68, posY + 20, 1, 0);
+				gui.drawButton(new ResourceLocation("minecraft:items/redstone_dust"), posX() + 28, posY + 20, 1, 0);
+				gui.drawButton(new ResourceLocation("cofh:icons/Icon_RSTorchOff"), posX() + 48, posY + 20, 1, 1);
+				gui.drawButton(new ResourceLocation("cofh:icons/Icon_RSTorchOn"), posX() + 68, posY + 20, 1, 0);
 				getFontRenderer().drawString(StringHelper.localize("info.cofh.low"), posXOffset() + 14, posY + 78, textColor);
 			} else {
-				gui.drawButton("IconRedstone", posX() + 28, posY + 20, 1, 0);
-				gui.drawButton("IconRSTorchOff", posX() + 48, posY + 20, 1, 0);
-				gui.drawButton("IconRSTorchOn", posX() + 68, posY + 20, 1, 1);
+				gui.drawButton(new ResourceLocation("minecraft:items/redstone_dust"), posX() + 28, posY + 20, 1, 0);
+				gui.drawButton(new ResourceLocation("cofh:icons/Icon_RSTorchOff"), posX() + 48, posY + 20, 1, 0);
+				gui.drawButton(new ResourceLocation("cofh:icons/Icon_RSTorchOn"), posX() + 68, posY + 20, 1, 1);
 				getFontRenderer().drawString(StringHelper.localize("info.cofh.high"), posXOffset() + 14, posY + 78, textColor);
 			}
 		}

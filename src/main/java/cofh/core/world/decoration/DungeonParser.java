@@ -1,21 +1,22 @@
 package cofh.core.world.decoration;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.gen.feature.WorldGenerator;
+
+import org.apache.logging.log4j.Logger;
+
 import cofh.api.world.IGeneratorParser;
 import cofh.core.world.FeatureParser;
 import cofh.lib.util.WeightedRandomBlock;
 import cofh.lib.util.WeightedRandomNBTTag;
 import cofh.lib.util.helpers.MathHelper;
 import cofh.lib.world.WorldGenDungeon;
+
 import com.google.gson.JsonObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.gen.feature.WorldGenerator;
-import net.minecraftforge.common.DungeonHooks.DungeonMob;
-
-import org.apache.logging.log4j.Logger;
 
 public class DungeonParser implements IGeneratorParser {
 
@@ -49,12 +50,7 @@ public class DungeonParser implements IGeneratorParser {
 		}
 		{
 			if (genObject.has("lootTable")) {
-				ArrayList<DungeonMob> lootList = new ArrayList<DungeonMob>();
-				if (FeatureParser.parseWeightedStringList(genObject.get("lootTable"), lootList)) {
-					r.lootTables = lootList;
-				} else {
-					log.warn("Entry specifies invalid string list for 'lootTable'! Using default.");
-				}
+				r.lootTable = new ResourceLocation(genObject.get("lootTable").getAsString());
 			}
 			if (genObject.has("maxChests")) {
 				r.maxChests = genObject.get("maxChests").getAsInt();

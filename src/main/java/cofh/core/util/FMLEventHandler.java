@@ -10,7 +10,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cofh.core.CoFHProps;
 import cofh.core.network.PacketCore;
-import cofh.core.render.ItemRenderRegistry;
 import cofh.core.util.energy.FurnaceFuelHandler;
 import cofh.core.util.fluid.BucketHandler;
 import cofh.core.util.oredict.OreDictionaryArbiter;
@@ -42,7 +41,6 @@ public class FMLEventHandler {
 
 		BucketHandler.refreshMap();
 		FurnaceFuelHandler.refreshMap();
-		ItemRenderRegistry.refreshMap();
 		OreDictionaryArbiter.initialize();
 	}
 

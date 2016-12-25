@@ -6,6 +6,8 @@ import gnu.trove.map.hash.THashMap;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -21,11 +23,12 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
+import cofh.api.core.IInitializer;
 import cofh.core.render.CoFHFontRenderer;
 import cofh.lib.util.helpers.ItemHelper;
 import cofh.lib.util.helpers.SecurityHelper;
 
-public class ItemBase extends Item {
+public abstract class ItemBase extends Item implements IInitializer {
 
 	public class ItemEntry {
 
@@ -34,20 +37,20 @@ public class ItemBase extends Item {
 		public int maxDamage = 0;
 		public boolean altName = false;
 
-		public ItemEntry(String name, int rarity, int maxDamage) {
+		public ItemEntry(String modname, String name, int rarity, int maxDamage) {
 
 			this.name = name;
 			this.rarity = rarity;
 			this.maxDamage = maxDamage;
 		}
 
-		public ItemEntry(String name, int rarity) {
+		public ItemEntry(String modname, String name, int rarity) {
 
 			this.name = name;
 			this.rarity = rarity;
 		}
 
-		public ItemEntry(String name) {
+		public ItemEntry(String modname, String name) {
 
 			this.name = name;
 		}
@@ -65,14 +68,11 @@ public class ItemBase extends Item {
 	public boolean hasTextures = true;
 	public String modName = "cofh";
 
-	public ItemBase() {
+	public ItemBase(@Nullable String modName) {
 
-		setHasSubtypes(true);
-	}
-
-	public ItemBase(String modName) {
-
-		this.modName = modName;
+		if (modName != null) {
+			this.modName = modName;
+		}
 		setHasSubtypes(true);
 	}
 
@@ -82,54 +82,54 @@ public class ItemBase extends Item {
 		return this;
 	}
 
-	public boolean addItem(int number, ItemEntry entry, boolean register) {
+	public ItemStack addItem(int number, ItemEntry entry, boolean register) {
 
 		if (itemMap.containsKey(Integer.valueOf(number))) {
-			return false;
+			return null;
 		}
 		itemMap.put(Integer.valueOf(number), entry);
 		itemList.add(Integer.valueOf(number));
 		if (register) {
 			GameRegistry.register(this, new ResourceLocation(entry.name));
 		}
-		return true;
+		return new ItemStack(this, 1, number);
 	}
 
-	public boolean addItem(int number, ItemEntry entry) {
+	public ItemStack addItem(int number, ItemEntry entry) {
 
 		return addItem(number, entry, true);
 	}
 
-	public boolean addItem(int number, String name, int rarity, boolean register) {
+	public ItemStack addItem(int number, String modname, String name, int rarity, boolean register) {
 
-		return addItem(number, new ItemEntry(name, rarity), register);
+		return addItem(number, new ItemEntry(modname, name, rarity), register);
 	}
 
-	public boolean addItem(int number, String name, int rarity) {
+	public ItemStack addItem(int number, String modname, String name, int rarity) {
 
-		return addItem(number, name, rarity, true);
+		return addItem(number, modname, name, rarity, true);
 	}
 
-	public boolean addItem(int number, String name) {
+	public ItemStack addItem(int number, String modname, String name) {
 
-		return addItem(number, name, 0);
+		return addItem(number, modname, name, 0);
 	}
 
-	public boolean addOreDictItem(int number, String name, int rarity) {
-		boolean registered = addItem(number, name, rarity);
+	public ItemStack addOreDictItem(int number, String modname, String name, int rarity) {
+		addItem(number, modname, name, rarity);
 		ItemStack stack = new ItemStack(this, 0, number);
 		OreDictionary.registerOre(name, stack);
 
-		return registered;
+		return stack;
 	}
 
-	public boolean addOreDictItem(int number, String name) {
+	public ItemStack addOreDictItem(int number, String modname, String name) {
 
-		boolean registered = addItem(number, name);
+		addItem(number, modname, name);
 		ItemStack stack =  new ItemStack(this, 0, number);
 		OreDictionary.registerOre(name, stack);
 
-		return registered;
+		return stack;
 	}
 
 	public String getRawName(ItemStack stack) {
@@ -170,9 +170,9 @@ public class ItemBase extends Item {
 		ItemEntry item = itemMap.get(i);
 
 		if (item.altName) {
-			return new StringBuilder().append(getUnlocalizedName()).append('.').append(item.name).append("Alt").toString();
+			return new StringBuilder().append(getUnlocalizedName()).append(item.name).append("Alt").toString();
 		}
-		return new StringBuilder().append("item.").append(getUnlocalizedName()).append('.').append(item.name).toString();
+		return new StringBuilder().append("item.").append(getUnlocalizedName()).append(item.name).toString();
 	}
 
 	@Override
@@ -199,19 +199,18 @@ public class ItemBase extends Item {
 		return super.setUnlocalizedName(name);
 	}
 
-	public void registertexture() {
-
-		if (!hasTextures) {
-			return;
-		}
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
-	}
-
 	@Override
 	@SideOnly(Side.CLIENT)
 	public FontRenderer getFontRenderer(ItemStack stack) {
 
 		return CoFHFontRenderer.loadFontRendererStack(stack);
+	}
+	@Override
+	public boolean initialize() {
+		for (int i = 0; i < itemMap.size(); i++) {
+			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, i, new ModelResourceLocation(this.getUnlocalizedName(new ItemStack(this, 1, i)).substring(5), "inventory"));
+		}
+		return true;
 	}
 
 }

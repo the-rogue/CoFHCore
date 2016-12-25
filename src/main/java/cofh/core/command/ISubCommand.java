@@ -16,7 +16,7 @@ public interface ISubCommand {
 
 	public String getCommandName();
 
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] arguments) throws NumberInvalidException, CommandException;
+	public void execute(MinecraftServer server, ICommandSender sender, String[] arguments) throws NumberInvalidException, CommandException;
 
 	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos);
 

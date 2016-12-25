@@ -3,6 +3,8 @@ package cofh.lib.world.feature;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
@@ -36,21 +38,24 @@ public class FeatureGenCave extends FeatureBase {
 			}
 			int seaLevel = averageSeaLevel;
 			if (seaLevel < 20) {
-				seaLevel = world.getHeightValue(x, z);
+				seaLevel = world.func_189649_b(x, z);
 			}
 
 			int stopY = random.nextInt(1 + seaLevel / 2);
 			int y = stopY;
+			IBlockState blockstate;
 			Block block;
 			do {
-				block = world.getBlock(x, y, z);
-			} while (!block.isAir(world, x, y, z) && ++y < seaLevel);
+				blockstate = world.getBlockState(new BlockPos(x, y, z));
+				block = blockstate.getBlock();
+			} while (!block.isAir(blockstate, world, new BlockPos(x, y, z)) && ++y < seaLevel);
 
 			if (y == seaLevel) {
 				y = 0;
 				do {
-					block = world.getBlock(x, y, z);
-				} while (!block.isAir(world, x, y, z) && ++y < stopY);
+					blockstate = world.getBlockState(new BlockPos(x, y, z));
+					block = blockstate.getBlock();
+				} while (!block.isAir(blockstate, world, new BlockPos(x, y, z)) && ++y < stopY);
 				if (y == stopY) {
 					continue;
 				}
@@ -62,24 +67,26 @@ public class FeatureGenCave extends FeatureBase {
 				}
 				do {
 					++y;
-					block = world.getBlock(x, y, z);
-				} while (y < seaLevel && block.isAir(world, x, y, z));
+					blockstate = world.getBlockState(new BlockPos(x, y, z));
+					block = blockstate.getBlock();
+				} while (y < seaLevel && block.isAir(blockstate, world, new BlockPos(x, y, z)));
 				if (y == seaLevel) {
 					continue;
 				}
 				--y;
-			} else if (block.isAir(world, x, y - 1, z)) {
+			} else if (block.isAir(blockstate, world, new BlockPos(x, y - 1, z))) {
 				--y;
 				do {
-					block = world.getBlock(x, y, z);
-				} while (block.isAir(world, x, y, z) && y-- > 0);
+					blockstate = world.getBlockState(new BlockPos(x, y, z));
+					block = blockstate.getBlock();
+				} while (block.isAir(blockstate, world, new BlockPos(x, y, z)) && y-- > 0);
 				if (y == -1) {
 					continue;
 				}
 				++y;
 			}
 
-			generated |= worldGen.generate(world, random, x, y, z);
+			generated |= worldGen.generate(world, random, new BlockPos(x, y, z));
 		}
 		return generated;
 	}

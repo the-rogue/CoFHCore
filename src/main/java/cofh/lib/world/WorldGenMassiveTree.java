@@ -1,9 +1,7 @@
 package cofh.lib.world;
 
-import static cofh.lib.world.WorldGenMinableCluster.*;
-
-import cofh.lib.util.WeightedRandomBlock;
-
+import static cofh.lib.world.WorldGenMinableCluster.canGenerateInBlock;
+import static cofh.lib.world.WorldGenMinableCluster.selectBlock;
 import gnu.trove.iterator.TLongObjectIterator;
 import gnu.trove.map.hash.TLongObjectHashMap;
 
@@ -13,16 +11,19 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSapling;
-import net.minecraft.network.play.server.S21PacketChunkData;
-import net.minecraft.server.management.PlayerManager;
-import net.minecraft.server.management.PlayerManager.PlayerInstance;
-import net.minecraft.util.MathHelper;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.network.play.server.SPacketChunkData;
+import net.minecraft.server.management.PlayerChunkMap;
+import net.minecraft.server.management.PlayerChunkMapEntry;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import cofh.lib.util.WeightedRandomBlock;
 
 public class WorldGenMassiveTree extends WorldGenerator {
 
@@ -38,7 +39,7 @@ public class WorldGenMassiveTree extends WorldGenerator {
 	private World worldObj;
 	/** Contains a list of a points at which to generate groups of leaves. */
 	private int[][] leafNodes;
-	private int[] basePos = new int[] { 0, 0, 0 };
+	private BlockPos basePos = new BlockPos(0, 0, 0);
 	private int heightLimit = 0;
 	private int height;
 	private int leafBases;
@@ -113,7 +114,7 @@ public class WorldGenMassiveTree extends WorldGenerator {
 
 		int var1 = density;
 
-		int[] basePos = this.basePos;
+		int[] basePos = { this.basePos.getX(), this.basePos.getY(), this.basePos.getZ() };
 		int[][] var2 = new int[var1 * heightLimit][4];
 		int var3 = basePos[1] + heightLimit - leafDistanceLimit;
 		int var4 = 1;
@@ -163,6 +164,7 @@ public class WorldGenMassiveTree extends WorldGenerator {
 		leafNodesLength = var4;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void genLeafLayer(int x, int y, int z, final int size) {
 
 		int t;
@@ -182,13 +184,14 @@ public class WorldGenMassiveTree extends WorldGenerator {
 				} else {
 					for (t = -1; t <= 1; t += 2) {
 						z = Z + zMod * t;
-						Block block = worldObj.getBlock(x, y, z);
+						IBlockState blockstate = worldObj.getBlockState(new BlockPos(x, y, z));
+						Block block = blockstate.getBlock();
 
-						if (safeGrowth ? canGenerateInBlock(worldObj, x, y, z, genBlock)
-								&& (!treeChecks || (block.isAir(worldObj, x, y, z) || block.isLeaves(worldObj, x, y, z) || block.canBeReplacedByLeaves(
-										worldObj, x, y, z))) : block.getBlockHardness(worldObj, x, y, z) >= 0) {
+						if (safeGrowth ? canGenerateInBlock(worldObj, new BlockPos(x, y, z), genBlock)
+								&& (!treeChecks || (block.isAir(blockstate, worldObj, new BlockPos(x, y, z)) || block.isLeaves(blockstate, worldObj, new BlockPos(x, y, z)) || block.canBeReplacedByLeaves(
+										blockstate, worldObj, new BlockPos(x, y, z)))) : blockstate.getBlockHardness(worldObj, new BlockPos(x, y, z)) >= 0) {
 							WeightedRandomBlock b = selectBlock(worldObj, leaves);
-							this.setBlockAndNotifyAdequately(worldObj, x, y, z, b.block, b.metadata);
+							this.setBlockAndNotifyAdequately(worldObj, new BlockPos(x, y, z), b.block.getStateFromMeta(b.metadata));
 						}
 					}
 					++zMod;
@@ -218,6 +221,7 @@ public class WorldGenMassiveTree extends WorldGenerator {
 
 	private int[] placeScratch = new int[3];
 
+	@SuppressWarnings("deprecation")
 	private void placeBlockLine(int[] par1, int[] par2, List<WeightedRandomBlock> block, int meta) {
 
 		int t;
@@ -269,7 +273,7 @@ public class WorldGenMassiveTree extends WorldGenerator {
 				}
 
 				WeightedRandomBlock par3 = selectBlock(worldObj, trunk);
-				this.setBlockAndNotifyAdequately(worldObj, var14[0], var14[1], var14[2], par3.block, par3.metadata | var17);
+				this.setBlockAndNotifyAdequately(worldObj, new BlockPos(var14[0], var14[1], var14[2]), par3.block.getStateFromMeta(par3.metadata| var17));
 			}
 		}
 	}
@@ -279,10 +283,10 @@ public class WorldGenMassiveTree extends WorldGenerator {
 	 */
 	private void generateTrunk() {
 
-		int var1 = basePos[0];
-		int var2 = basePos[1];
-		int var3 = basePos[1] + height;
-		int var4 = basePos[2];
+		int var1 = basePos.getX();
+		int var2 = basePos.getY();
+		int var3 = basePos.getY() + height;
+		int var4 = basePos.getZ();
 
 		int[] var5 = new int[] { var1, var2, var4 };
 		int[] var6 = new int[] { var1, var3, var4 };
@@ -304,9 +308,9 @@ public class WorldGenMassiveTree extends WorldGenerator {
 
 					this.placeBlockLine(var5, var6, trunk, 0);
 					if (smoothLogs) {
-						this.setBlockAndNotifyAdequately(worldObj, var6[0], var6[1], var6[2], null, 12);
+						this.setBlockAndNotifyAdequately(worldObj, new BlockPos(var6[0], var6[1], var6[2]), null);
 					}
-					worldObj.getBlock(var5[0], var5[1] - 1, var5[2]).onPlantGrow(worldObj, var5[0], var5[1] - 1, var5[2], var1, var2, var4);
+					worldObj.getBlockState(new BlockPos(var5[0], var5[1] - 1, var5[2])).getBlock().onPlantGrow(worldObj.getBlockState(new BlockPos(var5[0], var5[1] - 1, var5[2])),worldObj, new BlockPos(var5[0], var5[1] - 1, var5[2]), new BlockPos(var1, var2, var4));
 				}
 			}
 		}
@@ -328,7 +332,7 @@ public class WorldGenMassiveTree extends WorldGenerator {
 	 */
 	void generateLeafNodeBases() {
 
-		int[] start = new int[] { basePos[0], basePos[1], basePos[2] };
+		int[] start = new int[] { basePos.getX(), basePos.getY(), basePos.getZ() };
 		int[][] leafNodes = this.leafNodes;
 
 		int heightLimit = (int) (this.heightLimit * 0.2f);
@@ -336,7 +340,7 @@ public class WorldGenMassiveTree extends WorldGenerator {
 		for (int i = 0, e = leafNodesLength; i < e; ++i) {
 			int[] end = leafNodes[i];
 			start[1] = end[3];
-			int height = start[1] - basePos[1];
+			int height = start[1] - basePos.getY();
 
 			if (height >= heightLimit) {
 				this.placeBlockLine(start, end, trunk, meta);
@@ -389,12 +393,13 @@ public class WorldGenMassiveTree extends WorldGenerator {
 				var13[var6] = MathHelper.floor_float(par1[var6] + var14 * var9);
 				var13[var7] = MathHelper.floor_float(par1[var7] + var14 * var11);
 				int x = var13[0], y = var13[1], z = var13[2];
-				Block var16 = worldObj.getBlock(x, y, z);
+				IBlockState blockstate =  worldObj.getBlockState(new BlockPos(x, y, z));
+				Block block = blockstate.getBlock();
 
-				if (safeGrowth ? canGenerateInBlock(worldObj, x, y, z, genBlock)
-						&& (!treeChecks || !(var16.isAir(worldObj, x, y, z) || var16.isReplaceable(worldObj, x, y, z)
-								|| var16.canBeReplacedByLeaves(worldObj, x, y, z) || var16.isLeaves(worldObj, x, y, z) || var16.isWood(worldObj, x, y, z) || var16 instanceof BlockSapling))
-						: var16.getBlockHardness(worldObj, x, y, z) >= 0) {
+				if (safeGrowth ? canGenerateInBlock(worldObj, new BlockPos(x, y, z), genBlock)
+						&& (!treeChecks || !(block.isAir(blockstate, worldObj, new BlockPos(x, y, z)) || block.isReplaceable(worldObj, new BlockPos(x, y, z))
+								|| block.canBeReplacedByLeaves(blockstate, worldObj, new BlockPos(x, y, z)) || block.isLeaves(blockstate, worldObj, new BlockPos(x, y, z)) || block.isWood(worldObj, new BlockPos(x, y, z)) || block instanceof BlockSapling))
+						: blockstate.getBlockHardness(worldObj, new BlockPos(x, y, z)) >= 0) {
 					break;
 				}
 			}
@@ -408,19 +413,19 @@ public class WorldGenMassiveTree extends WorldGenerator {
 	 */
 	private boolean validTreeLocation() {
 
-		int newHeight = Math.min(heightLimit + basePos[1], 255) - basePos[1];
+		int newHeight = Math.min(heightLimit + basePos.getY(), 255) - basePos.getY();
 		if (newHeight < minHeight) {
 			return false;
 		}
 		heightLimit = newHeight;
 
-		if (!canGenerateInBlock(worldObj, basePos[0], basePos[1] - 1, basePos[2], genSurface)) {
+		if (!canGenerateInBlock(worldObj, new BlockPos(basePos).add(0, -1, 0), genSurface)) {
 			return false;
 		} else {
-			int[] var5 = new int[] { basePos[0], basePos[1], basePos[2] };
-			int[] var6 = new int[] { basePos[0], basePos[1] + heightLimit - 1, basePos[2] };
+			int[] minPos = new int[] { basePos.getX(), basePos.getY(), basePos.getZ() };
+			int[] maxPos = new int[] { basePos.getX(), basePos.getY() + heightLimit - 1, basePos.getZ() };
 
-			newHeight = this.checkBlockLine(var5, var6);
+			newHeight = this.checkBlockLine(minPos, maxPos);
 
 			if (newHeight == -1) {
 				newHeight = heightLimit;
@@ -437,30 +442,30 @@ public class WorldGenMassiveTree extends WorldGenerator {
 			height += rand.nextInt(heightLimit - height);
 
 			if (safeGrowth) {
-				int var1 = basePos[0];
-				int var2 = basePos[1];
-				int var3 = basePos[1] + height;
-				int var4 = basePos[2];
+				int xPos = basePos.getX();
+				int minYPos = basePos.getY();
+				int maxYPos = basePos.getY() + height;
+				int zPos = basePos.getZ();
 
-				var5 = new int[] { var1, var2, var4 };
-				var6 = new int[] { var1, var3, var4 };
+				minPos = new int[] { xPos, minYPos, zPos };
+				maxPos = new int[] { xPos, maxYPos, zPos };
 
 				double lim = 400f / trunkSize;
 
 				for (int i = -trunkSize; i <= trunkSize; i++) {
-					var5[0] = var1 + i;
-					var6[0] = var1 + i;
+					minPos[0] = xPos + i;
+					maxPos[0] = xPos + i;
 
 					for (int j = -trunkSize; j <= trunkSize; j++) {
 						if ((j * j + i * i) * 4 < trunkSize * trunkSize * 5) {
-							var5[2] = var4 + j;
-							var6[2] = var4 + j;
+							minPos[2] = zPos + j;
+							maxPos[2] = zPos + j;
 
 							if (slopeTrunk) {
-								var6[1] = var2 + sinc2(lim * i, lim * j, height);
+								maxPos[1] = minYPos + sinc2(lim * i, lim * j, height);
 							}
 
-							int t = checkBlockLine(var5, var6);
+							int t = checkBlockLine(minPos, maxPos);
 							if (t != -1) {
 								return false;
 							}
@@ -471,15 +476,6 @@ public class WorldGenMassiveTree extends WorldGenerator {
 
 			return true;
 		}
-	}
-
-	/**
-	 * Rescales the generator settings, only used in WorldGenBigTree
-	 */
-	@Override
-	public void setScale(double par1, double par3, double par5) {
-
-		setTreeScale((float) par1, (float) par3, (float) par5);
 	}
 
 	public WorldGenMassiveTree setTreeScale(float height, float width, float leaves) {
@@ -524,15 +520,14 @@ public class WorldGenMassiveTree extends WorldGenerator {
 	}
 
 	@Override
-	public synchronized boolean generate(World world, Random par2Random, int x, int y, int z) {
+	public synchronized boolean generate(World world, Random par2Random, BlockPos pos) {
 
 		// long time = System.nanoTime();
 		worldObj = world;
 		long var6 = par2Random.nextLong();
 		rand.setSeed(var6);
-		basePos[0] = x;
-		basePos[1] = y;
-		basePos[2] = z;
+		basePos = pos;
+		
 		if (heightLimit == 0) {
 			heightLimit = heightLimitLimit;
 		}
@@ -577,20 +572,20 @@ public class WorldGenMassiveTree extends WorldGenerator {
 								a.set(0, 0, 0, 0);
 								a.set(0, 0, 0, 15);
 								// }
-								Arrays.fill(a.data, (byte) 0);
+								Arrays.fill(a.getData(), (byte) 0);
 							}
 						}
 						chunk.resetRelightChecks();
 					}
-					chunk.isModified = true;
+					chunk.setChunkModified();
 					if (world instanceof WorldServer) {
-						PlayerManager manager = ((WorldServer) world).getPlayerManager();
+						PlayerChunkMap manager = ((WorldServer) world).getPlayerChunkMap();
 						if (manager == null) {
 							continue;
 						}
-						PlayerInstance watcher = manager.getOrCreateChunkWatcher(chunk.xPosition, chunk.zPosition, false);
+						PlayerChunkMapEntry watcher = manager.getOrCreateEntry(chunk.xPosition, chunk.zPosition);
 						if (watcher != null) {
-							watcher.sendToAllPlayersWatchingChunk(new S21PacketChunkData(chunk, false, -1));
+							watcher.sendPacket(new SPacketChunkData(chunk, -1));
 						}
 					}
 				}
@@ -607,47 +602,45 @@ public class WorldGenMassiveTree extends WorldGenerator {
 	private TLongObjectHashMap<Chunk> chunkMap;
 
 	@Override
-	public void setBlockAndNotifyAdequately(World world, int x, int y, int z, Block block, int meta) {
+	public void setBlockAndNotifyAdequately(World world, BlockPos pos, IBlockState blockstate) {
 
-		if ((y < 0) | y > 255) {
+		int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+		if ((pos.getY() < 0) | pos.getY() > 255) {
 			return;
 		}
 		generated = true;
 		if (!fastPlacement) {
-			if (block != null) {
-				super.setBlockAndNotifyAdequately(world, x, y, z, block, meta);
+			if (blockstate != null) {
+				super.setBlockAndNotifyAdequately(world, pos, blockstate);
 			} else {
-				world.setBlockMetadataWithNotify(x, y, z, world.getBlockMetadata(x, y, z) | meta, 2);
+				world.setBlockState(pos, blockstate, 2);
 			}
 			return;
 		}
 		// ++blocksAdded;
-		long pos = ((x & 0xFFFFFFF0L) << 32) | (z  & 0xFFFFFFF0L);
+		long lpos = ((x & 0xFFFFFFF0L) << 32) | (z  & 0xFFFFFFF0L);
 
-		Chunk chunk = chunkMap.get(pos);
+		Chunk chunk = chunkMap.get(lpos);
 		if (chunk == null) {
-			chunk = world.getChunkFromBlockCoords(x, z);
-			chunkMap.put(pos, chunk);
+			chunk = world.getChunkFromBlockCoords(pos);
+			chunkMap.put(lpos, chunk);
 		}
 
 		ExtendedBlockStorage[] storage = chunk.getBlockStorageArray();
 		ExtendedBlockStorage subChunk = storage[y >> 4];
 		if (subChunk == null) {
-			storage[y >> 4] = subChunk = new ExtendedBlockStorage(y & ~15, !world.provider.hasNoSky);
+			storage[y >> 4] = subChunk = new ExtendedBlockStorage(y & ~15, !world.provider.getHasNoSky());
 		}
 
 		x &= 15;
 		z &= 15;
-		if (block != null && subChunk.getBlockByExtId(x, y & 15, z).hasTileEntity(subChunk.getExtBlockMetadata(x, y & 15, z))) {
-			chunk.removeTileEntity(x, y, z);
+		if (blockstate != null && subChunk.get(x, y & 15, z).getBlock().hasTileEntity(subChunk.get(x, y & 15, z))) {
+			chunk.removeTileEntity(new BlockPos(x, y, z));
 		}
 		y &= 15;
 
-		if (block != null) {
-			subChunk.func_150818_a(x, y, z, block);
-			subChunk.setExtBlockMetadata(x, y, z, meta);
-		} else {
-			subChunk.setExtBlockMetadata(x, y, z, subChunk.getExtBlockMetadata(x, y, z) | meta);
+		if (blockstate != null) {
+			subChunk.set(x, y, z, blockstate);
 		}
 		subChunk.setExtBlocklightValue(x, y, z, 0);
 	}

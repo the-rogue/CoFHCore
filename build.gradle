@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = "1.10.2R4.0.1"
 group= "cofh" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "CoFHCore"
+archivesBaseName = "cofhcore"
 
 sourceCompatibility = targetCompatibility = "1.6" // Need this here so eclipse task generates correctly.
 compileJava {

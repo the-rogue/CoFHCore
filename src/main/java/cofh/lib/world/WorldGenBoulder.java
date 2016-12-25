@@ -1,14 +1,15 @@
 package cofh.lib.world;
 
-import static cofh.lib.world.WorldGenMinableCluster.*;
-
-import cofh.lib.util.WeightedRandomBlock;
+import static cofh.lib.world.WorldGenMinableCluster.canGenerateInBlock;
+import static cofh.lib.world.WorldGenMinableCluster.generateBlock;
 
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import cofh.lib.util.WeightedRandomBlock;
 
 public class WorldGenBoulder extends WorldGenerator {
 
@@ -30,21 +31,21 @@ public class WorldGenBoulder extends WorldGenerator {
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, int xCenter, int yCenter, int zCenter) {
+	public boolean generate(World world, Random rand, BlockPos pos) {
 
 		final int minSize = size, var = sizeVariance;
 		boolean r = false;
 		int i = clusterVariance > 0 ? clusters + rand.nextInt(clusterVariance + 1) : clusters;
 		while (i-- > 0) {
 
-			while (yCenter > minSize && world.isAirBlock(xCenter, yCenter - 1, zCenter)) {
-				--yCenter;
+			while (pos.getY() > minSize && world.isAirBlock(new BlockPos(pos).add(0, -1, 0))) {
+				pos.add(0, -1, 0);
 			}
-			if (yCenter <= (minSize + var + 1)) {
+			if (pos.getY() <= (minSize + var + 1)) {
 				return false;
 			}
 
-			if (canGenerateInBlock(world, xCenter, yCenter - 1, zCenter, genBlock)) {
+			if (canGenerateInBlock(world, new BlockPos(pos).add(0, -1, 0), genBlock)) {
 
 				int xWidth = minSize + (var > 1 ? rand.nextInt(var) : 0);
 				int yWidth = minSize + (var > 1 ? rand.nextInt(var) : 0);
@@ -65,9 +66,9 @@ public class WorldGenBoulder extends WorldGenerator {
 
 							if (dist <= maxDist) {
 								if (dist >= minDist) {
-									r |= generateBlock(world, xCenter + x, yCenter + y, zCenter + z, cluster);
+									r |= generateBlock(world, new BlockPos(pos).add(x, y, z), cluster);
 								} else {
-									r |= world.setBlockToAir(xCenter + x, yCenter + y, zCenter + z);
+									r |= world.setBlockToAir(new BlockPos(pos).add(x, y, z));
 								}
 							}
 						}
@@ -75,9 +76,7 @@ public class WorldGenBoulder extends WorldGenerator {
 				}
 			}
 
-			xCenter += rand.nextInt(var + minSize * 2) - (minSize + var / 2);
-			zCenter += rand.nextInt(var + minSize * 2) - (minSize + var / 2);
-			yCenter += rand.nextInt((var + 1) * 3) - (var + 1);
+			pos.add(rand.nextInt(var + minSize * 2) - (minSize + var / 2), rand.nextInt(var + minSize * 2) - (minSize + var / 2), rand.nextInt((var + 1) * 3) - (var + 1));
 		}
 
 		return r;

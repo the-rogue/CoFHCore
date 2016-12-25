@@ -1,24 +1,22 @@
 package cofh.core.fluid;
 
-import cofh.core.render.IconRegistry;
-import cofh.lib.render.particle.EntityDropParticleFX;
-import cofh.lib.util.helpers.StringHelper;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.util.IIcon;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.entity.EntityLiving.SpawnPlacementType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import cofh.lib.render.particle.ParticleDrip;
+import cofh.lib.util.helpers.StringHelper;
 
 public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 
@@ -32,11 +30,9 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 	public BlockFluidCoFHBase(Fluid fluid, Material material, String name) {
 
 		super(fluid, material);
-
 		this.name = StringHelper.titleCase(name);
-
-		setRenderPass(1);
-		setBlockName(modName + ".fluid." + name);
+		
+		setUnlocalizedName(modName + ":fluid" + name);
 		displacements.put(this, false);
 	}
 
@@ -46,9 +42,8 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 
 		this.name = StringHelper.titleCase(name);
 		this.modName = modName;
-
-		setRenderPass(1);
-		setBlockName(modName + ".fluid." + name);
+		
+		setUnlocalizedName(modName + ":fluid" + name);
 		displacements.put(this, false);
 	}
 
@@ -73,7 +68,7 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 	}
 
 	@Override
-	public boolean canCreatureSpawn(EnumCreatureType type, IBlockAccess world, int x, int y, int z) {
+	public boolean canCreatureSpawn(IBlockState state, IBlockAccess world, BlockPos pos, SpawnPlacementType type) {
 
 		return false;
 	}
@@ -85,55 +80,39 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IIcon getIcon(int side, int meta) {
+	public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand) {
 
-		return side <= 1 ? IconRegistry.getIcon("Fluid" + name) : IconRegistry.getIcon("Fluid" + name, 1);
-	}
+		super.randomDisplayTick(state, world, pos, rand);
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void registerBlockIcons(IIconRegister ir) {
-
-		IconRegistry.addIcon("Fluid" + name, modName + ":fluid/Fluid_" + name + "_Still", ir);
-		IconRegistry.addIcon("Fluid" + name + "1", modName + ":fluid/Fluid_" + name + "_Flow", ir);
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void randomDisplayTick(World world, int x, int y, int z, Random rand) {
-
-		super.randomDisplayTick(world, x, y, z, rand);
-
-		double px = x + rand.nextFloat();
-		double py = y - 1.05D;
-		double pz = z + rand.nextFloat();
+		double py = pos.getY() - 1.05D;
 
 		if (density < 0) {
-			py = y + 2.10D;
+			py = pos.getY() + 2.10D;
 		}
-		if (rand.nextInt(20) == 0 && world.isSideSolid(x, y + densityDir, z, densityDir == -1 ? ForgeDirection.UP : ForgeDirection.DOWN)
-				&& !world.getBlock(x, y + 2 * densityDir, z).getMaterial().blocksMovement()) {
-			EntityFX fx = new EntityDropParticleFX(world, px, py, pz, particleRed, particleGreen, particleBlue, densityDir);
+		if (rand.nextInt(20) == 0 && world.isSideSolid(new BlockPos(pos).add(0, densityDir, 0), densityDir == -1 ? EnumFacing.UP : EnumFacing.DOWN)
+				&& !world.getBlockState(new BlockPos(pos).add(0, 2 * densityDir, 0)).getMaterial().blocksMovement()) {
+			;
+			Particle fx = new ParticleDrip(world, pos.getX() + rand.nextFloat(), py, pos.getZ() + rand.nextFloat(), particleRed, particleGreen, particleBlue, densityDir);
 			FMLClientHandler.instance().getClient().effectRenderer.addEffect(fx);
 		}
 	}
 
 	@Override
-	public boolean canDisplace(IBlockAccess world, int x, int y, int z) {
+	public boolean canDisplace(IBlockAccess world, BlockPos pos) {
 
-		if (!shouldDisplaceFluids && world.getBlock(x, y, z).getMaterial().isLiquid()) {
+		if (!shouldDisplaceFluids && world.getBlockState(pos).getMaterial().isLiquid()) {
 			return false;
 		}
-		return super.canDisplace(world, x, y, z);
+		return super.canDisplace(world, pos);
 	}
 
 	@Override
-	public boolean displaceIfPossible(World world, int x, int y, int z) {
+	public boolean displaceIfPossible(World world, BlockPos pos) {
 
-		if (!shouldDisplaceFluids && world.getBlock(x, y, z).getMaterial().isLiquid()) {
+		if (!shouldDisplaceFluids && world.getBlockState(pos).getMaterial().isLiquid()) {
 			return false;
 		}
-		return super.displaceIfPossible(world, x, y, z);
+		return super.displaceIfPossible(world, pos);
 	}
 
 }

@@ -4,25 +4,31 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.network.play.client.CPacketPlayerDigging.Action;
+import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import cofh.core.util.CoreUtils;
 
 public class ItemSickleAdv extends ItemToolAdv {
 
 	public int radius = 3;
 
-	public ItemSickleAdv(Item.ToolMaterial toolMaterial) {
+	public ItemSickleAdv(Item.ToolMaterial toolMaterial, String modid, String name) {
 
-		super(3.0F, toolMaterial);
+		super(3.0F, 3.0F, toolMaterial);
 		addToolClass("sickle");
+		setUnlocalizedName(modid + ":" + name);
+		setRegistryName(name);
 
 		effectiveMaterials.add(Material.LEAVES);
 		effectiveMaterials.add(Material.PLANTS);
@@ -53,14 +59,14 @@ public class ItemSickleAdv extends ItemToolAdv {
 		Block block = world.getBlockState(pos).getBlock();
 		IBlockState blockstate = world.getBlockState(pos);
 		// only effective materials
-		if (!(getToolClasses(player.getHeldItemMainhand()).contains(block.getHarvestTool(blockstate)) || canHarvestBlock(block, player.getHeldItemMainhand()))) {
+		if (!(getToolClasses(player.getHeldItemMainhand()).contains(block.getHarvestTool(blockstate)) || canHarvestBlock(blockstate, player.getHeldItemMainhand()))) {
 			return false;
 		}
 		if (!ForgeHooks.canHarvestBlock(block, player, world, pos)) {
 			return false;
 		}
 		// send the blockbreak event
-		int xp;
+		int xp = 0;
 		if (playerMP != null) {
 			xp = ForgeHooks.onBlockBreakEvent(world, playerMP.interactionManager.getGameType(), playerMP, pos);
 			if (xp == -1) {
@@ -69,57 +75,57 @@ public class ItemSickleAdv extends ItemToolAdv {
 		}
 		if (player.capabilities.isCreativeMode) {
 			if (!world.isRemote) {
-				block.onBlockHarvested(world, x, y, z, meta, player);
+				block.onBlockHarvested(world, pos, blockstate, player);
 			}
 
-			if (block.removedByPlayer(world, player, x, y, z, false)) {
-				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
+			if (block.removedByPlayer(blockstate, world, pos, player, false)) {
+				block.onBlockDestroyedByPlayer(world, pos, blockstate);
 			}
 			// send update to client
 			if (!world.isRemote) {
-				playerMP.playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
+				playerMP.connection.sendPacket(new SPacketBlockChange(world, pos));
 			} else {
-				Minecraft.getMinecraft().getNetHandler()
-						.addToSendQueue(new C07PacketPlayerDigging(2, x, y, z, Minecraft.getMinecraft().objectMouseOver.sideHit));
+				Minecraft.getMinecraft().getConnection()
+						.sendPacket(new CPacketPlayerDigging(Action.STOP_DESTROY_BLOCK, pos, Minecraft.getMinecraft().objectMouseOver.sideHit));
 			}
 			return true;
 		}
 		if (!world.isRemote) {
 			// serverside we reproduce ItemInWorldManager.tryHarvestBlock
 			// ItemInWorldManager.removeBlock
-			block.onBlockHarvested(world, x, y, z, meta, player);
-			if (block.removedByPlayer(world, player, x, y, z, true)) {
-				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
-				block.harvestBlock(world, player, x, y, z, meta);
+			block.onBlockHarvested(world, pos, blockstate, player);
+			if (block.removedByPlayer(blockstate, world, pos, player, true)) {
+				block.onBlockDestroyedByPlayer(world, pos, blockstate);
+				block.harvestBlock(world, player, pos, blockstate, null, null);
 				if (block.equals(Blocks.VINE)) {
-					CoreUtils.dropItemStackIntoWorldWithVelocity(new ItemStack(Blocks.VINE), world, x, y, z);
+					CoreUtils.dropItemStackIntoWorldWithVelocity(new ItemStack(Blocks.VINE), world, pos.getX(), pos.getY(), pos.getZ());
 				}
-				if (event != null) {
-					block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());
+				if (xp == 0) {
+					block.dropXpOnBlockBreak(world, pos, xp);
 				}
 			}
 			// always send block update to client
-			playerMP.playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
+			playerMP.connection.sendPacket(new SPacketBlockChange(world, pos));
 		} else {
 			// PlayerControllerMP pcmp = Minecraft.getMinecraft().playerController;
 			// clientside we do a "this block has been clicked on long enough to be broken" call. This should not send any new packets
 			// the code above, executed on the server, sends a block-updates that give us the correct state of the block we destroy.
 			// following code can be found in PlayerControllerMP.onPlayerDestroyBlock
-			if (block.removedByPlayer(world, player, x, y, z, true)) {
-				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
+			if (block.removedByPlayer(blockstate, world, pos, player, true)) {
+				block.onBlockDestroyedByPlayer(world, pos, blockstate);
 			}
-			Minecraft.getMinecraft().getNetHandler().addToSendQueue(new C07PacketPlayerDigging(2, x, y, z, Minecraft.getMinecraft().objectMouseOver.sideHit));
+			Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(Action.STOP_DESTROY_BLOCK, pos, Minecraft.getMinecraft().objectMouseOver.sideHit));
 		}
 		return true;
 	}
 
 	@Override
-	public boolean onBlockStartBreak(ItemStack stack, int x, int y, int z, EntityPlayer player) {
+	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
 
 		World world = player.worldObj;
-		Block block = world.getBlock(x, y, z);
+		IBlockState blockstate = world.getBlockState(pos);
 
-		if (!canHarvestBlock(block, stack)) {
+		if (!canHarvestBlock(blockstate, stack)) {
 			if (!player.capabilities.isCreativeMode) {
 				stack.damageItem(1, player);
 			}
@@ -127,16 +133,35 @@ public class ItemSickleAdv extends ItemToolAdv {
 		}
 		boolean used = false;
 
-		world.playAuxSFXAtEntity(player, 2001, x, y, z, Block.getIdFromBlock(block) | (world.getBlockMetadata(x, y, z) << 12));
+		world.playEvent(player, 2001, pos, Block.getIdFromBlock(blockstate.getBlock()) | (blockstate.getBlock().getMetaFromState(blockstate) << 12));
 
-		for (int i = x - radius; i <= x + radius; i++) {
-			for (int k = z - radius; k <= z + radius; k++) {
-				used |= harvestBlock(world, i, y, k, player);
+		for (int i = pos.getX() - radius; i <= pos.getX() + radius; i++) {
+			for (int k = pos.getZ() - radius; k <= pos.getZ() + radius; k++) {
+				used |= harvestBlock(world, new BlockPos(i, pos.getZ(), k), player);
 			}
 		}
 		if (used && !player.capabilities.isCreativeMode) {
 			stack.damageItem(1, player);
 		}
+		return true;
+	}
+
+	@Override
+	public boolean preInit()
+	{
+		GameRegistry.register(this);
+		return true;
+	}
+	
+	@Override
+	public boolean initialize() {
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		return true;
+	}
+
+	@Override
+	public boolean postInit()
+	{
 		return true;
 	}
 

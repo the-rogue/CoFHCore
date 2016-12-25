@@ -10,6 +10,7 @@ import cofh.lib.util.helpers.StringHelper;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 
 import org.lwjgl.opengl.GL11;
@@ -135,11 +136,11 @@ public class TabSecurity extends TabBase {
 	protected void drawForeground() {
 
 		if (myContainer.getAccess().isPublic()) {
-			drawTabIcon("IconAccessPublic");
+			drawTabIcon(new ResourceLocation("cofh:icons/Icon_Access_Public"));
 		} else if (myContainer.getAccess().isRestricted()) {
-			drawTabIcon("IconAccessFriends");
+			drawTabIcon(new ResourceLocation("cofh:icons/Icon_Access_Friends"));
 		} else if (myContainer.getAccess().isPrivate()) {
-			drawTabIcon("IconAccessPrivate");
+			drawTabIcon(new ResourceLocation("cofh:icons/Icon_Access_Private"));
 		}
 		if (!isFullyOpened()) {
 			return;
@@ -148,19 +149,19 @@ public class TabSecurity extends TabBase {
 		getFontRenderer().drawStringWithShadow(StringHelper.localize("info.cofh.accessMode") + ":", posXOffset() + 6, posY + 42, subheaderColor);
 
 		if (myContainer.getAccess().isPublic()) {
-			gui.drawButton("IconAccessPublic", posX() + 28, posY + 20, 1, 1);
-			gui.drawButton("IconAccessFriends", posX() + 48, posY + 20, 1, 0);
-			gui.drawButton("IconAccessPrivate", posX() + 68, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Public"), posX() + 28, posY + 20, 1, 1);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Friends"), posX() + 48, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Private"), posX() + 68, posY + 20, 1, 0);
 			getFontRenderer().drawString(StringHelper.localize("info.cofh.accessPublic"), posXOffset() + 14, posY + 54, textColor);
 		} else if (myContainer.getAccess().isRestricted()) {
-			gui.drawButton("IconAccessPublic", posX() + 28, posY + 20, 1, 0);
-			gui.drawButton("IconAccessFriends", posX() + 48, posY + 20, 1, 1);
-			gui.drawButton("IconAccessPrivate", posX() + 68, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Public"), posX() + 28, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Friends"), posX() + 48, posY + 20, 1, 1);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Private"), posX() + 68, posY + 20, 1, 0);
 			getFontRenderer().drawString(StringHelper.localize("info.cofh.accessRestricted"), posXOffset() + 14, posY + 54, textColor);
 		} else if (myContainer.getAccess().isPrivate()) {
-			gui.drawButton("IconAccessPublic", posX() + 28, posY + 20, 1, 0);
-			gui.drawButton("IconAccessFriends", posX() + 48, posY + 20, 1, 0);
-			gui.drawButton("IconAccessPrivate", posX() + 68, posY + 20, 1, 1);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Public"), posX() + 28, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Friends"), posX() + 48, posY + 20, 1, 0);
+			gui.drawButton(new ResourceLocation("cofh:icons/Icon_Access_Private"), posX() + 68, posY + 20, 1, 1);
 			getFontRenderer().drawString(StringHelper.localize("info.cofh.accessPrivate"), posXOffset() + 14, posY + 54, textColor);
 		}
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);

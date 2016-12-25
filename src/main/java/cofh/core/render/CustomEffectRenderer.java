@@ -1,11 +1,13 @@
 package cofh.core.render;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleManager;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class CustomEffectRenderer extends EffectRenderer {
+public class CustomEffectRenderer extends ParticleManager {
 
 	public CustomEffectRenderer() {
 
@@ -13,7 +15,7 @@ public class CustomEffectRenderer extends EffectRenderer {
 	}
 
 	@Override
-	public void addEffect(EntityFX p) {
+	public void addEffect(Particle p) {
 
 	}
 }

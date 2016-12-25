@@ -59,6 +59,7 @@ public class GuiFriendsList extends GuiBaseAdv {
 	public GuiFriendsList(InventoryPlayer inventory) {
 
 		super(new ContainerFriendsList(inventory), TEXTURE);
+		
 		name = "info.cofh.friendsList";
 		drawInventory = false;
 		ySize = 188;
@@ -92,7 +93,6 @@ public class GuiFriendsList extends GuiBaseAdv {
 		tbName.setEnableBackgroundDrawing(false);
 
 		// Setup Text Area
-
 		taFriendsList = new GuiTextList(this.fontRendererObj, taflX, taflY, 128, 10);
 		taFriendsList.textLines = RegistrySocial.clientPlayerFriends;
 		taFriendsList.drawBackground = false;

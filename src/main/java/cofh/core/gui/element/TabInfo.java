@@ -1,5 +1,6 @@
 package cofh.core.gui.element;
 
+import net.minecraft.util.ResourceLocation;
 import cofh.CoFHCore;
 import cofh.lib.gui.GuiBase;
 import cofh.lib.util.helpers.MathHelper;
@@ -43,9 +44,9 @@ public class TabInfo extends TabScrolledText {
 	}
 
 	@Override
-	public String getIcon() {
+	public ResourceLocation getIcon() {
 
-		return "IconInformation";
+		return new ResourceLocation("cofh:icons/Icon_Information");
 	}
 
 	@Override

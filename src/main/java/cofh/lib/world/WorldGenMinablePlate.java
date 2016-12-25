@@ -2,13 +2,13 @@ package cofh.lib.world;
 
 import static cofh.lib.world.WorldGenMinableCluster.generateBlock;
 
-import cofh.lib.util.WeightedRandomBlock;
-
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import cofh.lib.util.WeightedRandomBlock;
 
 public class WorldGenMinablePlate extends WorldGenerator {
 
@@ -27,9 +27,9 @@ public class WorldGenMinablePlate extends WorldGenerator {
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, int x, int y, int z) {
+	public boolean generate(World world, Random rand, BlockPos pos) {
 
-		++y;
+		pos.add(0, 1, 0);
 		int size = radius;
 		if (radius > variation + 1) {
 			size = rand.nextInt(radius - variation) + variation;
@@ -38,15 +38,15 @@ public class WorldGenMinablePlate extends WorldGenerator {
 		byte height = this.height;
 
 		boolean r = false;
-		for (int posX = x - size; posX <= x + size; ++posX) {
-			int xDist = posX - x;
+		for (int posX = pos.getX() - size; posX <= pos.getX() + size; ++posX) {
+			int xDist = posX - pos.getX();
 			xDist *= xDist;
-			for (int posZ = z - size; posZ <= z + size; ++posZ) {
-				int zSize = posZ - z;
+			for (int posZ = pos.getZ() - size; posZ <= pos.getZ() + size; ++posZ) {
+				int zSize = posZ - pos.getZ();
 
 				if (zSize * zSize + xDist <= dist) {
-					for (int posY = y - height; slim ? posY < y + height : posY <= y + height; ++posY) {
-						r |= generateBlock(world, posX, posY, posZ, genBlock, cluster);
+					for (int posY = pos.getY() - height; slim ? posY < pos.getY() + height : posY <= pos.getY() + height; ++posY) {
+						r |= generateBlock(world, new BlockPos(posX, posY, posZ), genBlock, cluster);
 					}
 				}
 			}

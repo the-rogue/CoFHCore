@@ -1,5 +1,6 @@
 package cofh.core.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -29,7 +30,7 @@ public class CommandVersion implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] arguments) {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] arguments) {
 
 		sender.addChatMessage(new TextComponentString(StringHelper.localize("info.cofh.command.version.0") + " " + CoFHCore.version + "."));
 	}
@@ -37,7 +38,7 @@ public class CommandVersion implements ISubCommand {
 	@Override
 	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
 
-		return null;
+		return new ArrayList<String>();
 	}
 
 }

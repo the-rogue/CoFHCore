@@ -72,7 +72,7 @@ public class BucketHandler {
 			return;
 		}
 		boolean fill = true;
-		BlockPos pos = event.getTarget().blockPos;
+		BlockPos pos = event.getTarget().getBlockPos();
 		EnumFacing side = event.getTarget().sideHit;
 
 		l: if (!current.getItem().equals(Items.BUCKET)) {
@@ -110,9 +110,9 @@ public class BucketHandler {
 		event.setResult(Result.ALLOW);
 	}
 
-	public static boolean registerBucket(IBlockState blockstate, int bMeta, ItemStack bucket) {
+	public static boolean registerBucket(IBlockState blockstate, ItemStack bucket) {
 
-		if (blockstate == null || bMeta < 0 || bucket == null || buckets.containsKey(new BlockWrapper(blockstate))) {
+		if (blockstate == null || bucket == null || buckets.containsKey(new BlockWrapper(blockstate))) {
 			return false;
 		}
 		buckets.put(new BlockWrapper(blockstate), new ItemWrapper(bucket));

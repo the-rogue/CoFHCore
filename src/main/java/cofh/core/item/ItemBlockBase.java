@@ -7,19 +7,22 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import cofh.api.core.IInitializer;
 import cofh.core.render.CoFHFontRenderer;
 import cofh.lib.util.helpers.SecurityHelper;
 import cofh.lib.util.helpers.StringHelper;
 
-public class ItemBlockBase extends ItemBlock {
+public class ItemBlockBase extends ItemBlock implements IInitializer {
 
 	public ItemBlockBase(Block block) {
 
 		super(block);
 		setHasSubtypes(true);
 		setMaxDamage(0);
+		setRegistryName(block.getRegistryName());
 	}
 
 	@Override
@@ -61,5 +64,24 @@ public class ItemBlockBase extends ItemBlock {
 	public FontRenderer getFontRenderer(ItemStack stack) {
 
 		return CoFHFontRenderer.loadFontRendererStack(stack);
+	}
+
+	@Override
+	public boolean preInit()
+	{
+		GameRegistry.register(this);
+		return true;
+	}
+
+	@Override
+	public boolean initialize()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean postInit()
+	{
+		return true;
 	}
 }

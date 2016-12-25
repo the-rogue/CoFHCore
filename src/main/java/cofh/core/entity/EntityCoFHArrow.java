@@ -4,10 +4,11 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
-public class EntityCoFHArrow extends EntityArrow implements IEntityAdditionalSpawnData {
+public abstract class EntityCoFHArrow extends EntityArrow implements IEntityAdditionalSpawnData {
 
 	public EntityCoFHArrow(World world) {
 
@@ -54,5 +55,6 @@ public class EntityCoFHArrow extends EntityArrow implements IEntityAdditionalSpa
 		// TODO Auto-generated method stub
 		return null;
 	}
+	public abstract ResourceLocation getEntityTexture();
 
 }

@@ -46,7 +46,6 @@ public class GuiTextList extends Gui {
 	public GuiTextList(FontRenderer fontRenderer, int x, int y, int w, int lines) {
 
 		fRend = fontRenderer;
-
 		xPos = x;
 		yPos = y;
 		displayLines = lines;
@@ -66,9 +65,8 @@ public class GuiTextList extends Gui {
 	}
 
 	public void drawText() {
-
 		for (int i = startLine; i < startLine + displayLines; i++) {
-			if (textLines.size() > i) {
+			if (textLines.size() > i + 1) {
 				String lineToDraw = fRend.trimStringToWidth(textLines.get(i).getFormattedText(), width);
 				if (selectedLine == i && highlightSelectedLine) {
 					drawRect(xPos, yPos + 1 + lineHeight * (i - startLine), xPos + width, yPos + lineHeight * (1 + i - startLine), selectedLineColor);
@@ -91,7 +89,7 @@ public class GuiTextList extends Gui {
 	public String mouseClicked(int mouseX, int mouseY, int mouseButton, int offsetY) {
 
 		int theLine = (mouseY - offsetY) / lineHeight;
-		if (textLines.size() > theLine + startLine) {
+		if (textLines.size() > theLine + startLine + 1) {
 			return textLines.get(theLine + startLine).getFormattedText();
 		}
 		return "";

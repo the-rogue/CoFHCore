@@ -27,6 +27,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import cofh.api.block.IBlockDebug;
@@ -39,6 +40,7 @@ import cofh.api.tileentity.IReconfigurableFacing;
 import cofh.api.tileentity.IRedstoneControl;
 import cofh.api.tileentity.ISecurable;
 import cofh.api.tileentity.ITileInfo;
+import cofh.core.item.ItemBlockBase;
 import cofh.core.render.Render;
 import cofh.core.util.CoreUtils;
 import cofh.lib.util.helpers.MathHelper;
@@ -52,13 +54,23 @@ import com.mojang.authlib.GameProfile;
 
 public abstract class BlockCoFHBase extends Block implements ITileEntityProvider, IBlockDebug, IBlockInfo, IDismantleable, IInitializer {
 
-	public static int renderPass = 0;
 	public static final ArrayList<ItemStack> NO_DROP = new ArrayList<ItemStack>();
-
-	public BlockCoFHBase(Material material) {
+	protected ItemBlockBase itemblock;
+	
+	public BlockCoFHBase(Material material, String modid, String name) {
+		super(material);
+		setSoundType(SoundType.STONE);
+		setUnlocalizedName(modid + ":" + name);
+		setRegistryName(name);
+		this.itemblock = new ItemBlockBase(this);
+	}
+	public BlockCoFHBase(Material material, String modid, String name, ItemBlockBase itemblock) {
 
 		super(material);
 		setSoundType(SoundType.STONE);
+		setUnlocalizedName(modid + ":" + name);
+		setRegistryName(name);
+		this.itemblock = itemblock;
 	}
 
 	@Override
@@ -321,7 +333,21 @@ public abstract class BlockCoFHBase extends Block implements ITileEntityProvider
 	/* IInitializer */
 	@Override
 	public boolean preInit() {
-
+		
+		GameRegistry.register(this);
+		itemblock.preInit();
+		return true;
+	}
+	
+	@Override
+	public boolean initialize() {
+		itemblock.initialize();
+		return true;
+	}
+	
+	@Override
+	public boolean postInit() {
+		itemblock.postInit();
 		return true;
 	}
 

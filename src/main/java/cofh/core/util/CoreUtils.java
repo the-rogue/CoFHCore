@@ -140,38 +140,52 @@ public class CoreUtils {
 
 	public static void copyFileUsingStream(String source, File dest) throws IOException {
 
-		try (
-				InputStream is = Loader.getResource(source, null).openStream();
-				OutputStream os = new FileOutputStream(dest);) {
+		InputStream is = null;
+		OutputStream os = null;
+		try {
+				is = Loader.getResource(source, null).openStream();
+				os = new FileOutputStream(dest);
 
 			byte[] buffer = new byte[1024];
 			int length;
 			while ((length = is.read(buffer)) > 0) {
 				os.write(buffer, 0, length);
 			}
+		} finally {
+			is.close();
+			os.close();
 		}
 	}
 
 	public static void copyFileUsingChannel(File source, File dest) throws IOException {
 
-		try (
-				FileInputStream sourceStream = new FileInputStream(source);
-				FileChannel sourceChannel = sourceStream.getChannel();
-				FileOutputStream outputStream = new FileOutputStream(dest);) {
+		FileInputStream sourceStream = null;
+		FileChannel sourceChannel = null;
+		FileOutputStream outputStream = null;
+		try {
+				sourceStream = new FileInputStream(source);
+				sourceChannel = sourceStream.getChannel();
+				outputStream = new FileOutputStream(dest);
 			outputStream.getChannel().transferFrom(sourceChannel, 0, sourceChannel.size());
+		} finally {
+			sourceStream.close();
+			sourceChannel.close();
+			outputStream.close();
 		}
 	}
 
 	/* SOUND UTILS */
-	public static final String getSoundName(String modId, String soundpath) {
-
-		soundpath = soundpath.replaceAll("/", ".");
-		return String.format("%s:%s", modId, soundpath);
-	}
 
 	public static final float getSoundVolume(int category) {
 
 		return CoFHCore.proxy.getSoundVolume(category);
+	}
+	public static final SoundEvent createSound(String modid, String soundpath) {
+		soundpath = soundpath.replaceAll("/", ".");
+		ResourceLocation location = new ResourceLocation(modid, soundpath);
+		SoundEvent event = new SoundEvent(location);
+		SoundEvent.REGISTRY.register(-1, location, event);
+		return event;
 	}
 
 	/* ENTITY UTILS */

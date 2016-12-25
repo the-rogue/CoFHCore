@@ -1,7 +1,6 @@
 package cofh.lib.world;
 
 import static cofh.lib.world.WorldGenMinableCluster.*;
-
 import cofh.lib.util.WeightedRandomBlock;
 
 import java.util.Arrays;
@@ -10,14 +9,15 @@ import java.util.Random;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
 public class WorldGenAdvLakes extends WorldGenerator {
 
-	private static final List<WeightedRandomBlock> GAP_BLOCK = Arrays.asList(new WeightedRandomBlock(Blocks.air, 0));
+	private static final List<WeightedRandomBlock> GAP_BLOCK = Arrays.asList(new WeightedRandomBlock(Blocks.AIR, 0));
 	private final List<WeightedRandomBlock> cluster;
 	private final WeightedRandomBlock[] genBlock;
 	public List<WeightedRandomBlock> outlineBlock = null;
@@ -38,23 +38,23 @@ public class WorldGenAdvLakes extends WorldGenerator {
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, int xStart, int yStart, int zStart) {
+	public boolean generate(World world, Random rand, BlockPos pos) {
 
 		int widthOff = width / 2;
-		xStart -= widthOff;
-		zStart -= widthOff;
+		pos.add(-widthOff, 0, 0) ;
+		pos.add(0, 0, -widthOff) ;
 
 		int heightOff = height / 2 + 1;
 
-		while (yStart > heightOff && world.isAirBlock(xStart, yStart, zStart)) {
-			--yStart;
+		while (pos.getY() > heightOff && world.isAirBlock(pos)) {
+			pos.add(0, -1, 0);
 		}
 		--heightOff;
-		if (yStart <= heightOff) {
+		if (pos.getY() <= heightOff) {
 			return false;
 		}
 
-		yStart -= heightOff;
+		pos.add(0, -heightOff, 0) ;
 		boolean[] spawnBlock = new boolean[width * width * height];
 
 		int W = width - 1, H = height - 1;
@@ -97,12 +97,12 @@ public class WorldGenAdvLakes extends WorldGenerator {
 
 					if (flag) {
 						if (y >= heightOff) {
-							Material material = world.getBlock(xStart + x, yStart + y, zStart + z).getMaterial();
+							Material material = world.getBlockState(new BlockPos(pos).add(x, y, z)).getMaterial();
 							if (material.isLiquid()) {
 								return false;
 							}
 						} else {
-							if (!canGenerateInBlock(world, xStart + x, yStart + y, zStart + z, genBlock)) {
+							if (!canGenerateInBlock(world, new BlockPos(pos).add(x, y, z), genBlock)) {
 								return false;
 							}
 						}
@@ -116,9 +116,9 @@ public class WorldGenAdvLakes extends WorldGenerator {
 				for (y = 0; y < height; ++y) {
 					if (spawnBlock[(x * width + z) * height + y]) {
 						if (y < heightOff) {
-							generateBlock(world, xStart + x, yStart + y, zStart + z, genBlock, cluster);
-						} else if (canGenerateInBlock(world, xStart + x, yStart + y, zStart + z, genBlock)) {
-							generateBlock(world, xStart + x, yStart + y, zStart + z, gapBlock);
+							generateBlock(world, new BlockPos(pos).add(x, y, z), genBlock, cluster);
+						} else if (canGenerateInBlock(world, new BlockPos(pos).add(x, y, z), genBlock)) {
+							generateBlock(world, new BlockPos(pos).add(x, y, z), gapBlock);
 						}
 					}
 				}
@@ -128,10 +128,10 @@ public class WorldGenAdvLakes extends WorldGenerator {
 		for (x = 0; x < width; ++x) {
 			for (z = 0; z < width; ++z) {
 				for (y = 0; y < height; ++y) {
-					if (spawnBlock[(x * width + z) * height + y] && world.getBlock(xStart + x, yStart + y - 1, zStart + z).equals(Blocks.dirt)
-							&& world.getSavedLightValue(EnumSkyBlock.Sky, xStart + x, yStart + y, zStart + z) > 0) {
-						BiomeGenBase bgb = world.getBiomeGenForCoords(xStart + x, zStart + z);
-						world.setBlock(xStart + x, yStart + y - 1, zStart + z, bgb.topBlock, bgb.field_150604_aj, 2);
+					if (spawnBlock[(x * width + z) * height + y] && world.getBlockState(new BlockPos(pos).add(x, y - 1, z)).equals(Blocks.DIRT.getDefaultState())
+							&& world.getLightFor(EnumSkyBlock.SKY, new BlockPos(pos).add(x, y, z)) > 0) {
+						Biome bgb = world.getBiomeGenForCoords(new BlockPos(pos).add(x, y, z));
+						world.setBlockState(new BlockPos(pos).add(x, y - 1, z), bgb.topBlock, 2);
 					}
 				}
 			}
@@ -148,8 +148,8 @@ public class WorldGenAdvLakes extends WorldGenerator {
 										|| (y < H && spawnBlock[(x * width + z) * height + (y + 1)]) || (y > 0 && spawnBlock[(x * width + z) * height + (y - 1)]));
 
 						if (flag && (solidOutline | y < heightOff || rand.nextInt(2) != 0)
-								&& (totalOutline || world.getBlock(xStart + x, yStart + y, zStart + z).getMaterial().isSolid())) {
-							generateBlock(world, xStart + x, yStart + y, zStart + z, outlineBlock);
+								&& (totalOutline || world.getBlockState(new BlockPos(pos).add(x, y, z)).getMaterial().isSolid())) {
+							generateBlock(world, new BlockPos(pos).add(x, y, z), outlineBlock);
 						}
 					}
 				}

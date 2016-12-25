@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
@@ -51,7 +51,7 @@ public class RenderPlayerFace implements ICustomCharRenderer {
 				Property property = (Property) Iterables.getFirst(profile.getProperties().get("textures"), (Object) null);
 
 				if (property == null) {
-					profile = Minecraft.getMinecraft().func_152347_ac().fillProfileProperties(profile, true);
+					profile = Minecraft.getMinecraft().getSessionService().fillProfileProperties(profile, true);
 					textureCache.put(profile, profile);
 				}
 			}
@@ -78,15 +78,15 @@ public class RenderPlayerFace implements ICustomCharRenderer {
 	@Override
 	public float renderChar(char letter, boolean italicFlag, float x, float y, CoFHFontRenderer fontRenderer) {
 
-		ResourceLocation resourcelocation = AbstractClientPlayer.locationStevePng;
+		ResourceLocation resourcelocation = DefaultPlayerSkin.getDefaultSkin(profile.getId());
 
 		if (profile != null) {
 			Minecraft minecraft = Minecraft.getMinecraft();
 			@SuppressWarnings("rawtypes")
-			Map map = minecraft.func_152342_ad().func_152788_a(profile);
+			Map map = minecraft.getSkinManager().loadSkinFromCache(profile);
 
 			if (map.containsKey(MinecraftProfileTexture.Type.SKIN)) {
-				resourcelocation = minecraft.func_152342_ad().func_152792_a((MinecraftProfileTexture) map.get(MinecraftProfileTexture.Type.SKIN),
+				resourcelocation = minecraft.getSkinManager().loadSkin((MinecraftProfileTexture) map.get(MinecraftProfileTexture.Type.SKIN),
 						MinecraftProfileTexture.Type.SKIN);
 			}
 		}

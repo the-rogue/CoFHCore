@@ -5,6 +5,6 @@
 @API(apiVersion = CoFHLibProps.VERSION, owner = "CoFHLib", provides = "CoFHLib|render")
 package cofh.lib.render;
 
+import net.minecraftforge.fml.common.API;
 import cofh.lib.CoFHLibProps;
-import cpw.mods.fml.common.API;
 

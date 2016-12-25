@@ -5,6 +5,6 @@
 @API(apiVersion = CoFHLibProps.VERSION, owner = "CoFHLib", provides = "CoFHLib|world|feature")
 package cofh.lib.world.feature;
 
+import net.minecraftforge.fml.common.API;
 import cofh.lib.CoFHLibProps;
-import cpw.mods.fml.common.API;
 

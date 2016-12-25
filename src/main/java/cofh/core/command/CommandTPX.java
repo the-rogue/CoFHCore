@@ -1,5 +1,6 @@
 package cofh.core.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -33,7 +34,7 @@ public class CommandTPX implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] arguments) throws CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] arguments) throws CommandException {
 
 		// TODO: allow selector commands to target anything (single player, all players[@a], specific entities [@e], etc.)
 		// where it makes sense to allow it (e.g., not allowing teleporting a single thing to many things)
@@ -52,12 +53,12 @@ public class CommandTPX implements ISubCommand {
 					player.dismountRidingEntity();
 					if (playerSender.dimension == player.dimension) {
 						player.setPositionAndUpdate(playerSender.posX, playerSender.posY, playerSender.posZ);
-						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.otherToSelf", player.getGameProfile(), player.posX,
+						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.otherToSelf", player.getGameProfile().getName(), player.posX,
 								player.posY, player.posZ);
 					} else {
 						EntityHelper.transferPlayerToDimension(player, playerSender.dimension, playerSender.mcServer.getPlayerList());
 						player.setPositionAndUpdate(playerSender.posX, playerSender.posY, playerSender.posZ);
-						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOtherToSelf", player.getGameProfile(),
+						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOtherToSelf", player.getGameProfile().getName(),
 								player.worldObj.provider.getDimensionType().getName(), player.posX, player.posY, player.posZ);
 					}
 				} else {
@@ -93,13 +94,13 @@ public class CommandTPX implements ISubCommand {
 					player.dismountRidingEntity();
 					if (otherPlayer.dimension == player.dimension) {
 						player.setPositionAndUpdate(otherPlayer.posX, otherPlayer.posY, otherPlayer.posZ);
-						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.otherTo", player.getGameProfile(),
-								otherPlayer.getGameProfile(), player.posX, player.posY, player.posZ);
+						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.otherTo", player.getGameProfile().getName(),
+								otherPlayer.getGameProfile().getName(), player.posX, player.posY, player.posZ);
 					} else {
 						EntityHelper.transferPlayerToDimension(player, otherPlayer.dimension, otherPlayer.mcServer.getPlayerList());
 						player.setPositionAndUpdate(otherPlayer.posX, otherPlayer.posY, otherPlayer.posZ);
-						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOtherTo", player.getGameProfile(),
-								otherPlayer.getGameProfile(), player.worldObj.provider.getDimensionType().getName(), player.posX, player.posY, player.posZ);
+						CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOtherTo", player.getGameProfile().getName(),
+								otherPlayer.getGameProfile().getName(), player.worldObj.provider.getDimensionType().getName(), player.posX, player.posY, player.posZ);
 					}
 				} else {
 					sender.addChatMessage(new TextComponentTranslation("info.cofh.command.tpx.snark.1", arguments[1]));
@@ -122,7 +123,7 @@ public class CommandTPX implements ISubCommand {
 					EntityHelper.transferPlayerToDimension(player, dimension, player.mcServer.getPlayerList());
 				}
 				player.setPositionAndUpdate(player.posX, player.posY, player.posZ);
-				CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOther", player.getGameProfile(),
+				CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOther", player.getGameProfile().getName(),
 						player.worldObj.provider.getDimensionType().getName(), player.posX, player.posY, player.posZ);
 			}
 			break;
@@ -139,7 +140,7 @@ public class CommandTPX implements ISubCommand {
 				player.dismountRidingEntity();
 				player.setPositionAndUpdate(CommandBase.parseCoordinate(player.posX, arguments[2], true).getAmount(),
 						CommandBase.parseCoordinate(player.posY, arguments[3], true).getAmount(), CommandBase.parseCoordinate(player.posZ, arguments[4], true).getAmount());
-				CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.other", player.getGameProfile(), player.posX, player.posY,
+				CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.other", player.getGameProfile().getName(), player.posX, player.posY,
 						player.posZ);
 			} catch (PlayerNotFoundException t) {
 				int dimension;
@@ -177,7 +178,7 @@ public class CommandTPX implements ISubCommand {
 			}
 			player.setPositionAndUpdate(CommandBase.parseCoordinate(player.posX, arguments[2], true).getAmount(),
 					CommandBase.parseCoordinate(player.posY, arguments[3], true).getAmount(), CommandBase.parseCoordinate(player.posZ, arguments[4], true).getAmount());
-			CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOther", player.getGameProfile(),
+			CommandHandler.logAdminCommand(sender, this, "info.cofh.command.tpx.dimensionOther", player.getGameProfile().getName(),
 					player.worldObj.provider.getDimensionType().getName(), player.posX, player.posY, player.posZ);
 			break;
 		}
@@ -198,7 +199,7 @@ public class CommandTPX implements ISubCommand {
 			return CommandBase.getListOfStringsMatchingLastWord(args, strings);
 		}
 
-		return null;
+		return new ArrayList<String>();
 
 	}
 

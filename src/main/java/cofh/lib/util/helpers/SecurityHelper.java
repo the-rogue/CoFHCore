@@ -34,7 +34,6 @@ public class SecurityHelper {
 	public static final GameProfile UNKNOWN_GAME_PROFILE = new GameProfile(UUID.fromString("1ef1a6f0-87bc-4e78-0a0b-c6824eb787ea"), "[None]");
 	private static boolean setup = false;
 
-	@SuppressWarnings("unchecked")
 	public static void setup() {
 
 		if (setup) {
@@ -42,7 +41,7 @@ public class SecurityHelper {
 		}
 		EnumConnectionState.PLAY.registerPacket(EnumPacketDirection.CLIENTBOUND, Login.S__PacketSendUUID.class);
 		Map<Class<?>, EnumConnectionState> data;
-		data = ReflectionHelper.getPrivateValue(EnumConnectionState.class, null, "field_150761_f");
+		data = ReflectionHelper.getPrivateValue(EnumConnectionState.class, null, "STATES_BY_CLASS");
 		data.put(Login.S__PacketSendUUID.class, EnumConnectionState.PLAY);
 		MinecraftForge.EVENT_BUS.register(new Login.S__PacketSendUUID());
 		setup = true;

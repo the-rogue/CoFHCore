@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.common.config.Configuration;
 import cofh.core.network.PacketHandler;
 import cofh.core.network.PacketSocial;
@@ -22,7 +23,7 @@ public class RegistrySocial {
 	}
 
 	public static Configuration friendConf;
-	public static List<String> clientPlayerFriends = new LinkedList<String>();
+	public static List<ITextComponent> clientPlayerFriends = new LinkedList<ITextComponent>();
 
 	public synchronized static boolean addFriend(GameProfile owner, String friendName) {
 

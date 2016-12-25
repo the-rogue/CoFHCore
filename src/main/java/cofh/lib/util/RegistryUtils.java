@@ -82,7 +82,7 @@ public class RegistryUtils {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void _(WorldEvent.Load event) {
+	public void onWorldEventLoad(WorldEvent.Load event) {
 
 		if (Repl.replacements.size() < 1) {
 			return;

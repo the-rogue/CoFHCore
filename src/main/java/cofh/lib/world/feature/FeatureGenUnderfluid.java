@@ -1,18 +1,20 @@
 package cofh.lib.world.feature;
 
-import cofh.lib.util.WeightedRandomBlock;
-import cofh.lib.util.helpers.BlockHelper;
-import cofh.lib.util.helpers.FluidHelper;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import cofh.lib.util.WeightedRandomBlock;
+import cofh.lib.util.helpers.BlockHelper;
+import cofh.lib.util.helpers.FluidHelper;
 
 public class FeatureGenUnderfluid extends FeatureBase {
 
@@ -45,6 +47,7 @@ public class FeatureGenUnderfluid extends FeatureBase {
 		this.fluidList = fluidList;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean generateFeature(Random random, int chunkX, int chunkZ, World world) {
 
@@ -61,34 +64,36 @@ public class FeatureGenUnderfluid extends FeatureBase {
 
 			int y = BlockHelper.getSurfaceBlockY(world, x, z);
 			l: do {
-				Block block = world.getBlock(x, y, z);
+				IBlockState blockstate = world.getBlockState(new BlockPos(x, y, z));
+				Block block = blockstate.getBlock();
 				if (water) {
-					if (block.getMaterial() == Material.water) {
+					if (blockstate.getMaterial() == Material.WATER) {
 						continue;
 					}
-					if (world.getBlock(x, y + 1, z).getMaterial() != Material.water) {
+					if (world.getBlockState(new BlockPos(x, y + 1, z)).getMaterial() != Material.WATER) {
 						continue;
 					}
 				} else {
 					Fluid fluid = FluidHelper.lookupFluidForBlock(block);
-					if (fluid != null && Arrays.binarySearch(fluidList, fluid.getID()) >= 0) {
+					//TODO Replace this depreciated method!!!
+					if (fluid != null && Arrays.binarySearch(fluidList, FluidRegistry.getFluidID(fluid.getName())) >= 0) {
 						continue;
 					}
 
-					fluid = FluidHelper.lookupFluidForBlock(world.getBlock(x, y + 1, z));
-					if (fluid == null || Arrays.binarySearch(fluidList, fluid.getID()) < 0) {
+					fluid = FluidHelper.lookupFluidForBlock(world.getBlockState(new BlockPos(x, y + 1, z)).getBlock());
+					if (fluid == null || Arrays.binarySearch(fluidList, FluidRegistry.getFluidID(fluid.getName())) < 0) {
 						continue;
 					}
 				}
 				for (WeightedRandomBlock mat : matList) {
-					if (block.isReplaceableOreGen(world, x, y, z, mat.block)) {
+					if (block.isReplaceableOreGen(mat.block.getStateFromMeta(mat.metadata), world, new BlockPos(x, y, z), null)) {
 						break l;
 					}
 				}
 			} while (y-- > 1);
 
 			if (y > 0) {
-				generated |= worldGen.generate(world, random, x, y, z);
+				generated |= worldGen.generate(world, random, new BlockPos(x, y, z));
 			}
 		}
 		return generated;

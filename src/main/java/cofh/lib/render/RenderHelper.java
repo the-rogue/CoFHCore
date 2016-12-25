@@ -1,14 +1,13 @@
 package cofh.lib.render;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.init.Blocks;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -37,12 +36,12 @@ public final class RenderHelper {
 
 	public static final TextureManager engine() {
 
-		return Minecraft.getMinecraft().renderEngine;
+		return Minecraft.getMinecraft().getTextureManager();
 	}
 
 	public static final Tessellator tessellator() {
 
-		return Tessellator.instance;
+		return Tessellator.getInstance();
 	}
 
 	public static void setColor3ub(int color) {
@@ -59,16 +58,16 @@ public final class RenderHelper {
 
 		GL11.glColor4f(1F, 1F, 1F, 1F);
 	}
-
+/*
 	public static void renderItemAsBlock(RenderBlocks renderer, ItemStack item, double translateX, double translateY, double translateZ) {
 
 		renderTextureAsBlock(renderer, item.getIconIndex(), translateX, translateY, translateZ);
 	}
 
-	public static void renderTextureAsBlock(RenderBlocks renderer, IIcon texture, double translateX, double translateY, double translateZ) {
+	public static void renderTextureAsBlock(RenderManager renderer, IIcon texture, double translateX, double translateY, double translateZ) {
 
-		Tessellator tessellator = Tessellator.instance;
-		Block block = Blocks.stone;
+		Tessellator tessellator = Tessellator.getInstance();
+		Block block = Blocks.STONE;
 
 		if (texture == null) {
 			return;
@@ -138,53 +137,49 @@ public final class RenderHelper {
 		}
 		tessellator.draw();
 	}
+*/
 
-	public static void renderItemIn2D(IIcon icon) {
+	public static void renderIcon(TextureAtlasSprite icon, double z) {
 
-		ItemRenderer.renderItemIn2D(Tessellator.instance, icon.getMaxU(), icon.getMinV(), icon.getMinU(), icon.getMaxV(), icon.getIconWidth(),
-				icon.getIconHeight(), 0.0625F);
+		Tessellator.getInstance().getBuffer().begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+		Tessellator.getInstance().getBuffer().pos(0, 16, z).tex(icon.getMinU(), icon.getMaxV()).endVertex();
+		Tessellator.getInstance().getBuffer().pos(16, 16, z).tex(icon.getMaxU(), icon.getMaxV()).endVertex();
+		Tessellator.getInstance().getBuffer().pos(16, 0, z).tex(icon.getMaxU(), icon.getMinV()).endVertex();
+		Tessellator.getInstance().getBuffer().pos(0, 0, z).tex(icon.getMinU(), icon.getMinV()).endVertex();
+		Tessellator.getInstance().draw();
 	}
 
-	public static void renderIcon(IIcon icon, double z) {
+	public static void renderIcon(double x, double y, double z, TextureAtlasSprite icon, int width, int height) {
 
-		Tessellator.instance.startDrawingQuads();
-		Tessellator.instance.addVertexWithUV(0, 16, z, icon.getMinU(), icon.getMaxV());
-		Tessellator.instance.addVertexWithUV(16, 16, z, icon.getMaxU(), icon.getMaxV());
-		Tessellator.instance.addVertexWithUV(16, 0, z, icon.getMaxU(), icon.getMinV());
-		Tessellator.instance.addVertexWithUV(0, 0, z, icon.getMinU(), icon.getMinV());
-		Tessellator.instance.draw();
-	}
-
-	public static void renderIcon(double x, double y, double z, IIcon icon, int width, int height) {
-
-		Tessellator tessellator = Tessellator.instance;
-		tessellator.startDrawingQuads();
-		tessellator.addVertexWithUV(x, y + height, z, icon.getMinU(), icon.getMaxV());
-		tessellator.addVertexWithUV(x + width, y + height, z, icon.getMaxU(), icon.getMaxV());
-		tessellator.addVertexWithUV(x + width, y, z, icon.getMaxU(), icon.getMinV());
-		tessellator.addVertexWithUV(x, y, z, icon.getMinU(), icon.getMinV());
+		Tessellator tessellator = Tessellator.getInstance();
+		VertexBuffer worldrenderer = tessellator.getBuffer();
+		worldrenderer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+		worldrenderer.pos(x, y + height, z).tex(icon.getMinU(), icon.getMaxV()).endVertex();
+		worldrenderer.pos(x + width, y + height, z).tex(icon.getMaxU(), icon.getMaxV()).endVertex();
+		worldrenderer.pos(x + width, y, z).tex(icon.getMaxU(), icon.getMinV()).endVertex();
+		worldrenderer.pos(x, y, z).tex(icon.getMinU(), icon.getMinV()).endVertex();
 		tessellator.draw();
 	}
 
-	public static final IIcon getFluidTexture(Fluid fluid) {
+	public static final ResourceLocation getFluidTexture(Fluid fluid) {
 
 		if (fluid == null) {
-			return FluidRegistry.LAVA.getIcon();
+			return FluidRegistry.LAVA.getStill();
 		}
-		return fluid.getIcon();
+		return fluid.getStill();
 	}
 
-	public static final IIcon getFluidTexture(FluidStack fluid) {
+	public static final ResourceLocation getFluidTexture(FluidStack fluid) {
 
-		if (fluid == null || fluid.getFluid() == null || fluid.getFluid().getIcon(fluid) == null) {
-			return FluidRegistry.LAVA.getIcon();
+		if (fluid == null || fluid.getFluid() == null || fluid.getFluid().getStill(fluid) == null) {
+			return FluidRegistry.LAVA.getStill();
 		}
-		return fluid.getFluid().getIcon(fluid);
+		return fluid.getFluid().getStill(fluid);
 	}
 
 	public static final void bindItemTexture(ItemStack stack) {
 
-		engine().bindTexture(stack.getItemSpriteNumber() == 0 ? MC_BLOCK_SHEET : MC_ITEM_SHEET);
+		engine().bindTexture(stack.getItem() instanceof ItemBlock ? MC_BLOCK_SHEET : MC_ITEM_SHEET);
 	}
 
 	public static final void bindTexture(ResourceLocation texture) {

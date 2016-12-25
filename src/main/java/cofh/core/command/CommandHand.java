@@ -61,7 +61,7 @@ public class CommandHand implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 
 		int l = args.length;
 		int i = 0;
@@ -71,13 +71,7 @@ public class CommandHand implements ISubCommand {
 		switch (l) {
 		case 0:
 			sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
-			try
-			{
-				throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
-			}
-			catch (WrongUsageException e)
-			{
-			}
+			throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
 		default:
 		case 2:
 		case 3:

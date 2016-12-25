@@ -1,11 +1,5 @@
 package cofh.core.render;
 
-import cofh.CoFHCore;
-import cofh.core.CoFHProps;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-
 import gnu.trove.map.hash.TIntFloatHashMap;
 
 import java.io.BufferedReader;
@@ -15,11 +9,17 @@ import java.io.InputStreamReader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import org.lwjgl.opengl.ARBFragmentShader;
 import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.ARBVertexShader;
 import org.lwjgl.opengl.GL11;
+
+import cofh.CoFHCore;
+import cofh.core.CoFHProps;
 
 public final class ShaderHelper {
 
@@ -32,7 +32,7 @@ public final class ShaderHelper {
 			return;
 		}
 
-		FMLCommonHandler.instance().bus().register(new ShaderHelper());
+		MinecraftForge.EVENT_BUS.register(new ShaderHelper());
 	}
 
 	public static int gameTicks = 0;

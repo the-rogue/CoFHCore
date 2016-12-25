@@ -1,16 +1,15 @@
 package cofh.core.render.hitbox;
-
-import net.minecraft.block.Block;
+/*
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.math.RayTraceResult;
 
 import org.lwjgl.opengl.GL11;
-
+*/
 public class RenderHitbox {
-
 	public static double extraSpace = 0.002;
 
 	/**
@@ -18,19 +17,20 @@ public class RenderHitbox {
 	 *
 	 * @param customHitBox
 	 */
-	public static void drawSelectionBox(EntityPlayer thePlayer, MovingObjectPosition mop, float pTickTime, CustomHitBox customHitBox) {
+	/*
+	public static void drawSelectionBox(EntityPlayer thePlayer, RayTraceResult rtr, float pTickTime, CustomHitBox customHitBox) {
 
-		if (mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+		if (rtr.typeOfHit == RayTraceResult.Type.BLOCK) {
 			GL11.glEnable(GL11.GL_BLEND);
 			OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 			GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.4F);
 			GL11.glLineWidth(2.0F);
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
 			GL11.glDepthMask(false);
-			Block block = thePlayer.worldObj.getBlock(mop.blockX, mop.blockY, mop.blockZ);
+			IBlockState block = thePlayer.worldObj.getBlockState(rtr.blockPos);
 
-			if (block.getMaterial() != Material.air) {
-				block.setBlockBoundsBasedOnState(thePlayer.worldObj, mop.blockX, mop.blockY, mop.blockZ);
+			if (block.getMaterial() != Material.AIR) {
+				block.getBlock().setBlockBoundsBasedOnState(thePlayer.worldObj, rtr.blockPos);
 				double d0 = thePlayer.lastTickPosX + (thePlayer.posX - thePlayer.lastTickPosX) * pTickTime;
 				double d1 = thePlayer.lastTickPosY + (thePlayer.posY - thePlayer.lastTickPosY) * pTickTime;
 				double d2 = thePlayer.lastTickPosZ + (thePlayer.posZ - thePlayer.lastTickPosZ) * pTickTime;
@@ -41,14 +41,14 @@ public class RenderHitbox {
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
 			GL11.glDisable(GL11.GL_BLEND);
 		}
-	}
+	}*/
 
 	/**
 	 * Draws lines for the edges of the bounding box.
-	 */
+	 */ /*
 	public static void drawOutlinedBoundingBox(CustomHitBox hitbox) {
 
-		Tessellator tessellator = Tessellator.instance;
+		Tessellator tessellator = Tessellator.getInstance();
 		tessellator.startDrawing(1);
 
 		// Top and Bottom faces
@@ -63,8 +63,8 @@ public class RenderHitbox {
 		addVerticalVertexs(hitbox, tessellator);
 
 		tessellator.draw();
-	}
-
+	}*/
+/*
 	public static void addVerticalVertexs(CustomHitBox hitbox, Tessellator tessellator) {
 
 		if (hitbox.drawSide[2]) {
@@ -114,8 +114,8 @@ public class RenderHitbox {
 			tessellator.addVertex(hitbox.minX, hitbox.minY + hitbox.middleHeight, hitbox.minZ + hitbox.middleWidth);
 		}
 
-	}
-
+	}*/
+/*
 	public static void addTopBottomVertex(CustomHitBox hitbox, int side, double sideLength, double heightToAdd, Tessellator tessellator) {
 
 		if (hitbox.drawSide[side]) {
@@ -258,6 +258,6 @@ public class RenderHitbox {
 				tessellator.addVertex(hitbox.minX + hitbox.middleDepth, hitbox.minY + heightToAdd, hitbox.minZ + hitbox.middleWidth);
 			}
 		}
-	}
-
+	}*/
+	
 }

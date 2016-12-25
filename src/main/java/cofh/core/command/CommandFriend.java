@@ -1,10 +1,12 @@
 package cofh.core.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.command.WrongUsageException;
@@ -41,7 +43,7 @@ public class CommandFriend implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] arguments) throws PlayerNotFoundException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] arguments) throws PlayerNotFoundException, CommandException {
 
 		if (arguments.length > 2) {
 			EntityPlayerMP player;
@@ -73,13 +75,7 @@ public class CommandFriend implements ISubCommand {
 				}
 			} else {
 				sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
-				try
-				{
-					throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
-				}
-				catch (WrongUsageException e)
-				{
-				}
+				throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
 			}
 		} else if (arguments.length > 1 && arguments[1].equalsIgnoreCase("gui")) {
 			if (sender instanceof EntityPlayerMP) {
@@ -90,13 +86,7 @@ public class CommandFriend implements ISubCommand {
 			}
 		} else {
 			sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
-			try
-			{
-				throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
-			}
-			catch (WrongUsageException e)
-			{
-			}
+			throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
 		}
 	}
 
@@ -105,9 +95,15 @@ public class CommandFriend implements ISubCommand {
 		if (args.length == 2) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, new String[] { "add", "remove", "gui" });
 		} else if (args.length == 3) {
-			return CommandBase.getListOfStringsMatchingLastWord(args, server.getAllUsernames());
+			ArrayList<String> usernames = new ArrayList<String>();
+			for (String s : server.getAllUsernames()) {
+				if (!s.equals(sender.getName())){
+					usernames.add(s);
+				}
+			}
+			return CommandBase.getListOfStringsMatchingLastWord(args, usernames);
 		}
-		return null;
+		return new ArrayList<String>();
 	}
 
 }

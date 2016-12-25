@@ -1,11 +1,13 @@
 package cofh.core.command;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.PlayerNotFoundException;
@@ -36,17 +38,11 @@ public class CommandPregen implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
 
 		if (args.length < 4) {
 			sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
-			try
-			{
-				throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
-			}
-			catch (WrongUsageException e)
-			{
-			}
+			throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
 		}
 		World world = sender.getEntityWorld();
 		if (world.isRemote) {
@@ -130,7 +126,7 @@ public class CommandPregen implements ISubCommand {
 		if (args.length == 2) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, server.getAllUsernames());
 		}
-		return null;
+		return new ArrayList<String>();
 	}
 
 }

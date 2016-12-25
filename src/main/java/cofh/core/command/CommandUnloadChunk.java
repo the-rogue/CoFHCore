@@ -1,6 +1,7 @@
 package cofh.core.command;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -39,14 +40,14 @@ public class CommandUnloadChunk implements ISubCommand {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 
 		if (!(sender instanceof EntityPlayerMP)) {
 			return;
 		}
 
 		if (chunksToUnload == null) {
-			chunksToUnload = ReflectionHelper.findField(ChunkProviderServer.class, "field_73248_b", "chunksToUnload");
+			chunksToUnload = ReflectionHelper.findField(ChunkProviderServer.class, "field_73248_b", "droppedChunksSet");
 		}
 
 		EntityPlayerMP player = (EntityPlayerMP) sender;
@@ -67,7 +68,7 @@ public class CommandUnloadChunk implements ISubCommand {
 	@Override
 	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
 
-		return null;
+		return new ArrayList<String>();
 	}
 
 }

@@ -49,7 +49,7 @@ import com.google.common.eventbus.Subscribe;
 @IFMLLoadingPlugin.SortingIndex(1001)
 public class LoadingPlugin implements IFMLLoadingPlugin {
 
-	public static final String MC_VERSION = "[1.7.10]";
+	public static final String MC_VERSION = "[1.10.2]";
 	public static ArrayList<String> transformersList = new ArrayList<String>();
 	public static boolean runtimeDeobfEnabled = false;
 	public static ASMDataTable ASM_DATA = null;
@@ -109,7 +109,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
 				}
 			});
 			JOptionPane.showMessageDialog(null, ep, "Fatal error", JOptionPane.ERROR_MESSAGE);
-			System.exit(1);
+			throw new RuntimeException("This version of " + mod + " does not support Minecraft version " + mcVersion);
 		}
 		l: if (obfuscated && System.getProperty("java.specification.version").compareTo("1.8") < 0) {
 			// create always-on-top modal dialogue in a separate thread so initialization can continue (but the user has to respond anyway)

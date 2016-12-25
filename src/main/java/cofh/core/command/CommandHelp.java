@@ -38,7 +38,7 @@ public class CommandHelp implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 
 		List<String> commandList = new ArrayList<String>(CommandHandler.getCommandList());
 		Collections.sort(commandList, String.CASE_INSENSITIVE_ORDER);
@@ -82,7 +82,7 @@ public class CommandHelp implements ISubCommand {
 		if (args.length == 2) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, CommandHandler.getCommandList());
 		}
-		return null;
+		return new ArrayList<String>();
 
 	}
 

@@ -1,6 +1,6 @@
 package cofh.core.particles;
 
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
 
 public class ParticleMCSheet extends ParticleBase {
 	float particleTextureIndexX;
@@ -18,7 +18,7 @@ public class ParticleMCSheet extends ParticleBase {
 	}
 
 	@Override
-	public void render(Tessellator tessellator, double partialTicks) {
-		renderParticle(tessellator, partialTicks, size, particleTextureIndexX, particleTextureIndexX + SPRITE_SIZE, particleTextureIndexY, particleTextureIndexY + SPRITE_SIZE);
+	public void render(VertexBuffer worldRenderer, double partialTicks) {
+		renderParticle(worldRenderer, partialTicks, size, particleTextureIndexX, particleTextureIndexX + SPRITE_SIZE, particleTextureIndexY, particleTextureIndexY + SPRITE_SIZE);
 	}
 }

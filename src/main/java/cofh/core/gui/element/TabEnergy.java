@@ -9,6 +9,8 @@ import cofh.lib.util.helpers.StringHelper;
 
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 
 public class TabEnergy extends TabBase {
@@ -60,7 +62,7 @@ public class TabEnergy extends TabBase {
 	@Override
 	protected void drawForeground() {
 
-		drawTabIcon("IconEnergy");
+		drawTabIcon(new ResourceLocation("cofh:icons/Icon_Energy"));
 		if (!isFullyOpened()) {
 			return;
 		}

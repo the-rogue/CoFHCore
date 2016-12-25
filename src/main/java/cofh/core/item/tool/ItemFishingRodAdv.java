@@ -1,39 +1,45 @@
 package cofh.core.item.tool;
 
-import cofh.core.entity.EntityCoFHFishHook;
-import cofh.core.util.CoreUtils;
-import cofh.lib.util.helpers.ItemHelper;
-
+import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFishingRod;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import cofh.api.core.IInitializer;
+import cofh.core.entity.EntityCoFHFishHook;
+import cofh.lib.util.helpers.ItemHelper;
 
-public class ItemFishingRodAdv extends ItemFishingRod {
+public class ItemFishingRodAdv extends ItemFishingRod implements IInitializer {
 
-	protected IIcon normalIcons[] = new IIcon[2];
-
-	public String repairIngot = "";
+	public ArrayList<String> repairIngot = new ArrayList<String>();
 	protected ToolMaterial toolMaterial;
 	protected boolean showInCreative = true;
 	protected int luckModifier = 0;
 	protected int speedModifier = 0;
 
-	public ItemFishingRodAdv(ToolMaterial toolMaterial) {
+	public ItemFishingRodAdv(ToolMaterial toolMaterial, String modid, String name) {
 
 		this.toolMaterial = toolMaterial;
+		setUnlocalizedName(modid + ":" + name);
+		setRegistryName(name);
 		this.setMaxDamage(toolMaterial.getMaxUses());
 	}
 
 	public ItemFishingRodAdv setRepairIngot(String repairIngot) {
 
-		this.repairIngot = repairIngot;
+		this.repairIngot.add(repairIngot);
 		return this;
 	}
 
@@ -73,7 +79,7 @@ public class ItemFishingRodAdv extends ItemFishingRod {
 	@Override
 	public boolean getIsRepairable(ItemStack itemToRepair, ItemStack stack) {
 
-		return ItemHelper.isOreNameEqual(stack, repairIngot);
+		return ItemHelper.isOreNameEqual(stack, (String[])repairIngot.toArray());
 	}
 
 	// TODO: This will need a custom render or something
@@ -90,45 +96,40 @@ public class ItemFishingRodAdv extends ItemFishingRod {
 	}
 
 	@Override
-	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
+	public ActionResult<ItemStack> onItemRightClick(ItemStack stack, World world, EntityPlayer player, EnumHand hand) {
 
 		if (player.fishEntity != null) {
-			int i = player.fishEntity.func_146034_e();
+			int i = player.fishEntity.handleHookRetraction();
 			stack.damageItem(i, player);
-			player.swingItem();
+			player.swingArm(hand);
 		} else {
-			world.playSoundAtEntity(player, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+			world.playSound(player, player.getPosition(), SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
 			if (!world.isRemote) {
 				world.spawnEntityInWorld(new EntityCoFHFishHook(world, player, luckModifier, speedModifier));
 			}
-			player.swingItem();
+			player.swingArm(hand);
 		}
-		return stack;
+		return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+	}
+	
+	@Override
+	public boolean preInit()
+	{
+		GameRegistry.register(this);
+		return true;
+	}
+	
+	@Override
+	public boolean initialize() {
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		return true;
 	}
 
 	@Override
-	public IIcon getIconIndex(ItemStack stack) {
-
-		return getIcon(stack, 0);
-	}
-
-	@Override
-	public IIcon getIcon(ItemStack stack, int pass) {
-
-		EntityPlayer player = CoreUtils.getClientPlayer();
-
-		if (player.inventory.getCurrentItem() == stack && player.fishEntity != null) {
-			return this.normalIcons[1];
-		}
-		return this.normalIcons[0];
-	}
-
-	@Override
-	public void registerIcons(IIconRegister ir) {
-
-		this.normalIcons[0] = ir.registerIcon(this.getIconString() + "_Uncast");
-		this.normalIcons[1] = ir.registerIcon(this.getIconString() + "_Cast");
+	public boolean postInit()
+	{
+		return true;
 	}
 
 }

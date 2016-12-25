@@ -1,14 +1,16 @@
 package cofh.lib.world;
 
-import static cofh.lib.world.WorldGenMinableCluster.*;
-
-import cofh.lib.util.WeightedRandomBlock;
+import static cofh.lib.world.WorldGenMinableCluster.canGenerateInBlock;
+import static cofh.lib.world.WorldGenMinableCluster.selectBlock;
 
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import cofh.lib.util.WeightedRandomBlock;
+import cofh.lib.util.position.BlockPosition;
 
 public class WorldGenDecoration extends WorldGenerator {
 
@@ -31,33 +33,32 @@ public class WorldGenDecoration extends WorldGenerator {
 		onBlock = on == null ? null : on.toArray(new WeightedRandomBlock[on.size()]);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	public boolean generate(World world, Random rand, int xStart, int yStart, int zStart) {
+	public boolean generate(World world, Random rand, BlockPos pos) {
 
 		boolean r = false;
 		for (int l = clusterSize; l-- > 0;) {
-			int x = xStart + rand.nextInt(xVar) - rand.nextInt(xVar);
-			int y = yStart + (yVar > 1 ? rand.nextInt(yVar) - rand.nextInt(yVar) : 0);
-			int z = zStart + rand.nextInt(zVar) - rand.nextInt(zVar);
+			BlockPos pos2 = new BlockPos(pos).add(rand.nextInt(xVar) - rand.nextInt(xVar), (yVar > 1 ? rand.nextInt(yVar) - rand.nextInt(yVar) : 0), rand.nextInt(zVar) - rand.nextInt(zVar));
 
-			if (!world.blockExists(x, y, z)) {
+			if (!BlockPosition.blockExists(world, pos2)) {
 				++l;
 				continue;
 			}
 
-			if ((!seeSky || world.canBlockSeeTheSky(x, y, z)) && canGenerateInBlock(world, x, y - 1, z, onBlock)
-					&& canGenerateInBlock(world, x, y, z, genBlock)) {
+			if ((!seeSky || world.canBlockSeeSky(pos2)) && canGenerateInBlock(world, new BlockPos(pos).add(0, -1, 0), onBlock)
+					&& canGenerateInBlock(world, pos2, genBlock)) {
 
 				WeightedRandomBlock block = selectBlock(world, cluster);
 				int stack = stackHeight > 1 ? rand.nextInt(stackHeight) : 0;
 				do {
-					if (!checkStay || block.block.canBlockStay(world, x, y, z)) {
-						r |= world.setBlock(x, y, z, block.block, block.metadata, 2);
+					if (!checkStay || block.block.canPlaceBlockAt(world, pos2)) {
+						r |= world.setBlockState(pos2, block.block.getStateFromMeta(block.metadata),2);
 					} else {
 						break;
 					}
-					++y;
-					if (!canGenerateInBlock(world, x, y, z, genBlock)) {
+					pos2.add(0, 1, 0);
+					if (!canGenerateInBlock(world, pos, genBlock)) {
 						break;
 					}
 				} while (stack-- > 0);

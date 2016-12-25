@@ -1,12 +1,14 @@
 package cofh.core.gui.element;
 
+import java.util.List;
+
+import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.opengl.GL11;
+
 import cofh.lib.gui.GuiBase;
 import cofh.lib.gui.element.TabBase;
 import cofh.lib.util.helpers.MathHelper;
-
-import java.util.List;
-
-import org.lwjgl.opengl.GL11;
 
 public abstract class TabScrolledText extends TabBase {
 
@@ -25,7 +27,7 @@ public abstract class TabScrolledText extends TabBase {
 		maxFirstLine = myText.size() - numLines;
 	}
 
-	public abstract String getIcon();
+	public abstract ResourceLocation getIcon();
 
 	public abstract String getTitle();
 
@@ -37,14 +39,14 @@ public abstract class TabScrolledText extends TabBase {
 			return;
 		}
 		if (firstLine > 0) {
-			gui.drawIcon("IconArrowUp1", posXOffset() + maxWidth - 20, posY + 16, 1);
+			gui.drawIcon(new ResourceLocation("cofh:icons/Icon_ArrowUp"), posXOffset() + maxWidth - 20, posY + 16, 1);
 		} else {
-			gui.drawIcon("IconArrowUp0", posXOffset() + maxWidth - 20, posY + 16, 1);
+			gui.drawIcon(new ResourceLocation("cofh:icons/Icon_ArrowUp_Inactive"), posXOffset() + maxWidth - 20, posY + 16, 1);
 		}
 		if (firstLine < maxFirstLine) {
-			gui.drawIcon("IconArrowDown1", posXOffset() + maxWidth - 20, posY + 76, 1);
+			gui.drawIcon(new ResourceLocation("cofh:icons/Icon_ArrowDown"), posXOffset() + maxWidth - 20, posY + 76, 1);
 		} else {
-			gui.drawIcon("IconArrowDown0", posXOffset() + maxWidth - 20, posY + 76, 1);
+			gui.drawIcon(new ResourceLocation("cofh:icons/Icon_ArrowDown_Inactive"), posXOffset() + maxWidth - 20, posY + 76, 1);
 		}
 		getFontRenderer().drawStringWithShadow(getTitle(), posXOffset() + 18, posY + 6, headerColor);
 		for (int i = firstLine; i < firstLine + numLines; i++) {

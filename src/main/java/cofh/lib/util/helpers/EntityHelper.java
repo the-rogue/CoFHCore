@@ -10,6 +10,7 @@ import net.minecraft.network.play.server.SPacketRespawn;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -76,13 +77,29 @@ public class EntityHelper {
 		double moveFactor = pOld.getMovementFactor() / pNew.getMovementFactor();
 		double x = entity.posX * moveFactor;
 		double z = entity.posZ * moveFactor;
+		double y = entity.posY;
 
 		oldWorld.theProfiler.startSection("placing");
 		x = MathHelper.clamp(x, -29999872, 29999872);
 		z = MathHelper.clamp(z, -29999872, 29999872);
+		boolean ynotset = true;
+		//TODO Improve this, so that you cannot get above the nether ect... and you always spawn on a solid block
+		while (ynotset) {
+			for (double i = y; i < pNew.getActualHeight(); i++) {
+				if (newWorld.isAirBlock(new BlockPos(x, i, z)) && newWorld.isAirBlock(new BlockPos(x, i - 1, z))) {
+					y = i;
+					ynotset = false;
+					break;
+				}
+			}
+			if (ynotset) {
+				x++;
+			}
+		}
+
 
 		if (entity.isEntityAlive()) {
-			entity.setLocationAndAngles(x, entity.posY, z, entity.rotationYaw, entity.rotationPitch);
+			entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
 			entity.forceSpawn = true;
 			newWorld.spawnEntityInWorld(entity);
 			entity.forceSpawn = false;

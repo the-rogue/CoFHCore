@@ -1,24 +1,23 @@
 package cofh.core.particles;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import cofh.lib.util.position.BlockPosition;
 
 public abstract class ParticleBase {
 	public final static float BASE_GRAVITY = 0.04F;
 	protected static final ResourceLocation MC_PARTICLES = new ResourceLocation("textures/particle/particles.png");
-	protected static final ResourceLocation MC_BLOCKS = TextureMap.locationBlocksTexture;
-	protected static final ResourceLocation MC_ITEMS = TextureMap.locationItemsTexture;
 	public static final Random rand = new Random();
 	public static double interpPosX;
 	public static double interpPosY;
@@ -30,8 +29,8 @@ public abstract class ParticleBase {
 	public static float rXZ;
 
 	public final ResourceLocation location;
-	protected final Vec3 prev;
-	protected final Vec3 pos;
+	protected final Vec3d prev;
+	protected final Vec3d pos;
 	protected double motX, motY, motZ;
 	protected float r = 1;
 	protected float g = 1;
@@ -44,8 +43,8 @@ public abstract class ParticleBase {
 	protected float gravity = BASE_GRAVITY;
 
 	protected ParticleBase(double x, double y, double z, double motX, double motY, double motZ, float size, int life, ResourceLocation location) {
-		pos = Vec3.createVectorHelper(x, y, z);
-		prev = Vec3.createVectorHelper(x, y, z);
+		pos = new Vec3d(x, y, z);
+		prev = new Vec3d(x, y, z);
 		this.motX = motX;
 		this.motY = motY;
 		this.motZ = motZ;
@@ -81,10 +80,8 @@ public abstract class ParticleBase {
 		return life++ < maxLife;
 	}
 
-	public void copyVecValuesFrom(Vec3 dst, Vec3 src) {
-		dst.xCoord = src.xCoord;
-		dst.yCoord = src.yCoord;
-		dst.zCoord = src.zCoord;
+	public void copyVecValuesFrom(Vec3d dst, Vec3d src) {
+		dst = new Vec3d(src.xCoord, src.yCoord, src.zCoord);
 	}
 
 	protected boolean moveEntity(double motX, double motY, double motZ) {
@@ -97,13 +94,11 @@ public abstract class ParticleBase {
 		} else {
 			if (motX == 0 && motY == 0 && motZ == 0) return true;
 
-			pos.xCoord += motX;
-			pos.yCoord += motY;
-			pos.zCoord += motZ;
+			pos.addVector(motX, motY, motZ);
 
-			MovingObjectPosition mop = worldObj.rayTraceBlocks(prev, pos);
-			if (mop != null) {
-				if (!collide(mop)) return false;
+			RayTraceResult rtr = worldObj.rayTraceBlocks(prev, pos);
+			if (rtr != null) {
+				if (!collide(rtr)) return false;
 
 				this.motX = pos.xCoord - prev.xCoord;
 				this.motY = pos.yCoord - prev.yCoord;
@@ -114,13 +109,13 @@ public abstract class ParticleBase {
 		}
 	}
 
-	private boolean collide(MovingObjectPosition mop) {
+	private boolean collide(RayTraceResult rtr) {
 		if (killOnCollide())
 			return false;
 
-		copyVecValuesFrom(pos, mop.hitVec);
+		copyVecValuesFrom(pos, rtr.hitVec);
 
-		onGround = this.motY < 0 && mop.sideHit == 1;
+		onGround = this.motY < 0 && rtr.sideHit == EnumFacing.UP;
 		return true;
 	}
 
@@ -138,27 +133,37 @@ public abstract class ParticleBase {
 		int z = MathHelper.floor_double(pos.zCoord);
 
 		World worldObj = Minecraft.getMinecraft().theWorld;
-		if (worldObj != null && worldObj.blockExists(x, 0, z)) {
+		if (worldObj != null && BlockPosition.blockExists(worldObj, new BlockPos(x, 0, z))) {
 			int y = MathHelper.floor_double(pos.yCoord);
-			return worldObj.getLightBrightnessForSkyBlocks(x, y, z, 0);
+			return worldObj.getCombinedLight(new BlockPos(x, y, z), 0);
 		} else {
 			return 0;
 		}
 	}
 
 	@SideOnly(Side.CLIENT)
-	public abstract void render(Tessellator tessellator, double partialTicks);
+	public abstract void render(VertexBuffer worldRenderer, double partialTicks);
 
 	@SideOnly(Side.CLIENT)
-	public void renderParticle(Tessellator tessellator, double partialTicks, double size, double u0, double u1, double v0, double v1) {
+	public void renderParticle(VertexBuffer worldRenderer, double partialTicks, double size, double u0, double u1, double v0, double v1) {
+
 		double x = pos.xCoord + (pos.xCoord - prev.xCoord) * partialTicks - interpPosX;
 		double y = pos.yCoord + (pos.yCoord - prev.yCoord) * partialTicks - interpPosY;
 		double z = pos.zCoord + (pos.zCoord - prev.zCoord) * partialTicks - interpPosZ;
-		tessellator.setColorRGBA_F(r, g, b, a);
-		tessellator.addVertexWithUV(x - rX * size - rYZ * size, y - rXZ * size, z - rZ * size - rXY * size, u1, v1);
-		tessellator.addVertexWithUV(x - rX * size + rYZ * size, y + rXZ * size, z - rZ * size + rXY * size, u1, v0);
-		tessellator.addVertexWithUV(x + rX * size + rYZ * size, y + rXZ * size, z + rZ * size + rXY * size, u0, v0);
-		tessellator.addVertexWithUV(x + rX * size - rYZ * size, y - rXZ * size, z + rZ * size - rXY * size, u0, v1);
+        int i = this.brightness((float)partialTicks);
+        int j = i >> 16 & 65535;
+        int k = i & 65535;
+        Vec3d[] avec3d = new Vec3d[] {
+        		new Vec3d((double)(-rX * size - rXY * size), (double)(-rZ * size), (double)(-rYZ * size - rXZ * size)), 
+        		new Vec3d((double)(-rX * size + rXY * size), (double)(rZ * size), (double)(-rYZ * size + rXZ * size)), 
+        		new Vec3d((double)(rX * size + rXY * size), (double)(rZ * size), (double)(rYZ * size + rXZ * size)), 
+        		new Vec3d((double)(rX * size - rXY * size), (double)(-rZ * size), (double)(rYZ * size - rXZ * size))
+        		};
+
+        worldRenderer.pos(x + avec3d[0].xCoord, y + avec3d[0].yCoord, z + avec3d[0].zCoord).tex(u1, v1).color(r, g, b, a).lightmap(j, k).endVertex();
+        worldRenderer.pos(x + avec3d[1].xCoord, y + avec3d[1].yCoord, z + avec3d[1].zCoord).tex(u1, v0).color(r, g, b, a).lightmap(j, k).endVertex();
+        worldRenderer.pos(x + avec3d[2].xCoord, y + avec3d[2].yCoord, z + avec3d[2].zCoord).tex(u0, v0).color(r, g, b, a).lightmap(j, k).endVertex();
+        worldRenderer.pos(x + avec3d[3].xCoord, y + avec3d[3].yCoord, z + avec3d[3].zCoord).tex(u0, v1).color(r, g, b, a).lightmap(j, k).endVertex();
 	}
 
 

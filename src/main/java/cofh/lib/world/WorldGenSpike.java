@@ -1,15 +1,16 @@
 package cofh.lib.world;
 
-import static cofh.lib.world.WorldGenMinableCluster.*;
-
-import cofh.lib.util.WeightedRandomBlock;
+import static cofh.lib.world.WorldGenMinableCluster.canGenerateInBlock;
+import static cofh.lib.world.WorldGenMinableCluster.generateBlock;
 
 import java.util.List;
 import java.util.Random;
 
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import cofh.lib.util.WeightedRandomBlock;
 
 public class WorldGenSpike extends WorldGenerator {
 
@@ -32,20 +33,20 @@ public class WorldGenSpike extends WorldGenerator {
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, int xStart, int yStart, int zStart) {
+	public boolean generate(World world, Random rand, BlockPos pos) {
 
-		while (world.isAirBlock(xStart, yStart, zStart) && yStart > 2) {
-			--yStart;
+		while (world.isAirBlock(pos) && pos.getY() > 2) {
+			pos.add(0, -1, 0);
 		}
 
-		if (!canGenerateInBlock(world, xStart, yStart, zStart, genBlock)) {
+		if (!canGenerateInBlock(world, pos, genBlock)) {
 			return false;
 		}
 
 		int height = rand.nextInt(heightVariance) + minHeight, originalHeight = height;
 		int size = height / (minHeight / 2) + rand.nextInt(sizeVariance);
 		if (size > 1 && positionVariance > 0) {
-			yStart += rand.nextInt(positionVariance + 1) - 1;
+			pos.add(0, rand.nextInt(positionVariance + 1) - 1, 0);
 		}
 
 		if (largeSpikes && size > 1 && (largeSpikeChance <= 0 || rand.nextInt(largeSpikeChance) == 0)) {
@@ -72,10 +73,10 @@ public class WorldGenSpike extends WorldGenerator {
 					if ((x == 0 && z == 0 || xDist * xDist + zDist * zDist <= layerSize * layerSize)
 							&& (x != -width && x != width && z != -width && z != width || rand.nextFloat() <= 0.75F)) {
 
-						generateBlock(world, xStart + x, yStart + y, zStart + z, genBlock, cluster);
+						generateBlock(world, new BlockPos(pos).add(x, y, z), genBlock, cluster);
 
 						if (y != 0 && width > 1) {
-							generateBlock(world, xStart + x, yStart - y + offsetHeight, zStart + z, genBlock, cluster);
+							generateBlock(world, new BlockPos(pos).add(x, - y + offsetHeight, z), genBlock, cluster);
 						}
 					}
 				}

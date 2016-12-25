@@ -1,35 +1,35 @@
 package cofh.core.particles;
 
-import com.google.common.base.Throwables;
-
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.crash.ICrashReportDetail;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import org.lwjgl.opengl.GL11;
+
+import com.google.common.base.Throwables;
 
 public class ParticleRenderer {
 	@SuppressWarnings("unused")
@@ -37,7 +37,6 @@ public class ParticleRenderer {
 
 	private ParticleRenderer() {
 		MinecraftForge.EVENT_BUS.register(this);
-		FMLCommonHandler.instance().bus().register(this);
 	}
 
 	private WeakReference<World> worldRef = new WeakReference<World>(null);
@@ -51,22 +50,24 @@ public class ParticleRenderer {
 
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glEnable(GL11.GL_FOG);
-		float p_78471_1_ = event.partialTicks;
 
-		mc.entityRenderer.enableLightmap(p_78471_1_);
+		mc.entityRenderer.enableLightmap();
 
-		EntityLivingBase p_78874_1_ = mc.renderViewEntity;
+		Entity p_78874_1_ = mc.getRenderViewEntity();
 
-		ParticleBase.interpPosX = p_78874_1_.lastTickPosX + (p_78874_1_.posX - p_78874_1_.lastTickPosX) * (double) event.partialTicks;
-		ParticleBase.interpPosY = p_78874_1_.lastTickPosY + (p_78874_1_.posY - p_78874_1_.lastTickPosY) * (double) event.partialTicks;
-		ParticleBase.interpPosZ = p_78874_1_.lastTickPosZ + (p_78874_1_.posZ - p_78874_1_.lastTickPosZ) * (double) event.partialTicks;
-		ParticleBase.rX = ActiveRenderInfo.rotationX;
-		ParticleBase.rZ = ActiveRenderInfo.rotationZ;
-		ParticleBase.rYZ = ActiveRenderInfo.rotationYZ;
-		ParticleBase.rXY = ActiveRenderInfo.rotationXY;
-		ParticleBase.rXZ = ActiveRenderInfo.rotationXZ;
+		ParticleBase.interpPosX = p_78874_1_.lastTickPosX + (p_78874_1_.posX - p_78874_1_.lastTickPosX) * (double) event.getPartialTicks();
+		ParticleBase.interpPosY = p_78874_1_.lastTickPosY + (p_78874_1_.posY - p_78874_1_.lastTickPosY) * (double) event.getPartialTicks();
+		ParticleBase.interpPosZ = p_78874_1_.lastTickPosZ + (p_78874_1_.posZ - p_78874_1_.lastTickPosZ) * (double) event.getPartialTicks();
+		ParticleBase.rX = ActiveRenderInfo.getRotationX();
+		ParticleBase.rZ = ActiveRenderInfo.getRotationZ();
+		ParticleBase.rYZ = ActiveRenderInfo.getRotationYZ();
+		ParticleBase.rXY = ActiveRenderInfo.getRotationXY();
+		ParticleBase.rXZ = ActiveRenderInfo.getRotationXZ();
 
 		synchronized (particles) {
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+			GL11.glAlphaFunc(GL11.GL_GREATER, 0.003921569F);
 			for (Map.Entry<ResourceLocation, LinkedList<ParticleBase>> entry : particles.entrySet()) {
 				mc.getTextureManager().bindTexture(entry.getKey());
 				LinkedList<ParticleBase> list = entry.getValue();
@@ -74,43 +75,43 @@ public class ParticleRenderer {
 
 				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 				GL11.glDepthMask(false);
-				GL11.glEnable(GL11.GL_BLEND);
-				GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-				GL11.glAlphaFunc(GL11.GL_GREATER, 0.003921569F);
-
-				Tessellator tessellator = Tessellator.instance;
-				tessellator.startDrawingQuads();
-
+                Tessellator tessellator = Tessellator.getInstance();
+                VertexBuffer vertexbuffer = tessellator.getBuffer();
+                vertexbuffer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+                
 				for (final ParticleBase particleBase : list) {
-					tessellator.setBrightness(particleBase.brightness(event.partialTicks));
 					try {
-						particleBase.render(tessellator, event.partialTicks);
+						particleBase.render(tessellator.getBuffer(), event.getPartialTicks());
 					} catch (Throwable throwable) {
-						CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Rendering Particle");
-						CrashReportCategory crashreportcategory = crashreport.makeCategory("Particle being rendered");
-						crashreportcategory.addCrashSectionCallable("Particle", new Callable<Object>() {
-							public String call() {
-								return particleBase.toString();
-							}
-						});
-						crashreportcategory.addCrashSectionCallable("Particle Type", new Callable<Object>() {
-							public String call() {
-								return particleBase.location.toString();
-							}
-						});
-						throw new ReportedException(crashreport);
-					}
+                        CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Rendering Particle");
+                        CrashReportCategory crashreportcategory = crashreport.makeCategory("Particle being rendered");
+                        crashreportcategory.setDetail("Particle", new ICrashReportDetail<String>()
+                        {
+                            public String call() throws Exception
+                            {
+                                return particleBase.toString();
+                            }
+                        });
+                        crashreportcategory.setDetail("Particle Type", new ICrashReportDetail<String>()
+                        {
+                            public String call() throws Exception
+                            {
+                                return particleBase.location.toString();
+                            }
+                        });
+                        throw new ReportedException(crashreport);
+                    }
 				}
 
 				tessellator.draw();
-				GL11.glDisable(GL11.GL_BLEND);
-				GL11.glDepthMask(true);
-				GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
 			}
+			GL11.glDisable(GL11.GL_BLEND);
+			GL11.glDepthMask(true);
+			GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
 		}
 
 
-		mc.entityRenderer.disableLightmap(p_78471_1_);
+		mc.entityRenderer.disableLightmap();
 
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glDisable(GL11.GL_FOG);
@@ -174,11 +175,11 @@ public class ParticleRenderer {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void unloadParticles(WorldEvent.Unload event) {
-		if (!event.world.isRemote) return;
+		if (!event.getWorld().isRemote) return;
 
-		if (event.world != Minecraft.getMinecraft().theWorld) {
+		if (event.getWorld() != Minecraft.getMinecraft().theWorld) {
 			World world = worldRef.get();
-			if (world != null && world != event.world) return;
+			if (world != null && world != event.getWorld()) return;
 		}
 
 		clearParticles();

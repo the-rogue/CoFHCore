@@ -1,27 +1,34 @@
 package cofh.core.item.tool;
 
+import java.util.Set;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import cofh.lib.util.helpers.BlockHelper;
 
 public class ItemHammerAdv extends ItemToolAdv {
 
-	@SuppressWarnings("unchecked")
-	public ItemHammerAdv(ToolMaterial toolMaterial) {
+	public ItemHammerAdv(ToolMaterial toolMaterial, String modid, String name) {
 
-		super(4.0F, toolMaterial);
+		super(4.0F, 4.0F, toolMaterial);
 		addToolClass("pickaxe");
 		addToolClass("hammer");
+		setUnlocalizedName(modid + ":" + name);
+		setRegistryName(name);
 
-		effectiveBlocks.addAll(ItemPickaxe.effectiveBlocks);
+		effectiveBlocks.addAll(new ItemPickaxeFake().geteffectiveblocks());
 		effectiveMaterials.add(Material.IRON);
 		effectiveMaterials.add(Material.ANVIL);
 		effectiveMaterials.add(Material.ROCK);
@@ -35,9 +42,9 @@ public class ItemHammerAdv extends ItemToolAdv {
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, EntityPlayer player) {
 
 		World world = player.worldObj;
-		IBlockState block = world.getBlockState(pos);
+		IBlockState blockstate = world.getBlockState(pos);
 
-		if (!canHarvestBlock(block, stack)) {
+		if (!canHarvestBlock(blockstate, stack)) {
 			if (!player.capabilities.isCreativeMode) {
 				stack.damageItem(1, player);
 			}
@@ -45,8 +52,8 @@ public class ItemHammerAdv extends ItemToolAdv {
 		}
 		boolean used = false;
 
-		float refStrength = ForgeHooks.blockStrength(block, player, world, pos);
-		if (refStrength != 0.0D && canHarvestBlock(block, stack)) {
+		float refStrength = ForgeHooks.blockStrength(blockstate, player, world, pos);
+		if (refStrength != 0.0D && canHarvestBlock(blockstate, stack)) {
 			RayTraceResult rtr = BlockHelper.getCurrentRayTraceResult(player, true);
 			IBlockState adjBlock;
 			float strength;
@@ -58,35 +65,35 @@ public class ItemHammerAdv extends ItemToolAdv {
 			switch (rtr.sideHit) {
 			case UP:
 			case DOWN:
-				for (x2 = rtr.blockPos.getX() - 1; x2 <= rtr.blockPos.getX() + 1; x2++) {
-					for (z2 = rtr.blockPos.getZ() - 1; z2 <= rtr.blockPos.getZ() + 1; z2++) {
+				for (x2 = rtr.getBlockPos().getX() - 1; x2 <= rtr.getBlockPos().getX() + 1; x2++) {
+					for (z2 = rtr.getBlockPos().getZ() - 1; z2 <= rtr.getBlockPos().getZ() + 1; z2++) {
 						adjBlock = world.getBlockState(new BlockPos(x2, y2, z2));
 						strength = ForgeHooks.blockStrength(adjBlock, player, world, new BlockPos(x2, y2, z2));
 						if (strength > 0f && refStrength / strength <= 10f) {
-							used |= harvestBlock(world, x2, y2, z2, player);
+							used |= harvestBlock(world, new BlockPos(x2, y2, z2), player);
 						}
 					}
 				}
 				break;
 			case NORTH:
 			case SOUTH:
-				for (x2 = rtr.blockPos.getX() - 1; x2 <= rtr.blockPos.getX() + 1; x2++) {
-					for (y2 = rtr.blockPos.getY() - 1; y2 <= rtr.blockPos.getY() + 1; y2++) {
+				for (x2 = rtr.getBlockPos().getX() - 1; x2 <= rtr.getBlockPos().getX() + 1; x2++) {
+					for (y2 = rtr.getBlockPos().getY() - 1; y2 <= rtr.getBlockPos().getY() + 1; y2++) {
 						adjBlock = world.getBlockState(new BlockPos(x2, y2, z2));
 						strength = ForgeHooks.blockStrength(adjBlock, player, world, new BlockPos(x2, y2, z2));
 						if (strength > 0f && refStrength / strength <= 10f) {
-							used |= harvestBlock(world, x2, y2, z2, player);
+							used |= harvestBlock(world, new BlockPos(x2, y2, z2), player);
 						}
 					}
 				}
 				break;
 			default:
-				for (y2 = rtr.blockPos.getY() - 1; y2 <= rtr.blockPos.getY() + 1; y2++) {
-					for (z2 = rtr.blockPos.getZ() - 1; z2 <= rtr.blockPos.getZ() + 1; z2++) {
+				for (y2 = rtr.getBlockPos().getY() - 1; y2 <= rtr.getBlockPos().getY() + 1; y2++) {
+					for (z2 = rtr.getBlockPos().getZ() - 1; z2 <= rtr.getBlockPos().getZ() + 1; z2++) {
 						adjBlock = world.getBlockState(new BlockPos(x2, y2, z2));
 						strength = ForgeHooks.blockStrength(adjBlock, player, world, new BlockPos(x2, y2, z2));
 						if (strength > 0f && refStrength / strength <= 10f) {
-							used |= harvestBlock(world, x2, y2, z2, player);
+							used |= harvestBlock(world, new BlockPos(x2, y2, z2), player);
 						}
 					}
 				}
@@ -97,6 +104,36 @@ public class ItemHammerAdv extends ItemToolAdv {
 			}
 		}
 		return true;
+	}
+	
+	@Override
+	public boolean preInit()
+	{
+		GameRegistry.register(this);
+		return true;
+	}
+	
+	@Override
+	public boolean initialize() {
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		return true;
+	}
+	
+	@Override
+	public boolean postInit()
+	{
+		return true;
+	}
+	
+	public class ItemPickaxeFake extends ItemPickaxe {
+
+		public ItemPickaxeFake()
+		{
+			super(Item.ToolMaterial.WOOD);
+		}
+		public Set<Block> geteffectiveblocks(){
+			return effectiveBlocks;
+		}
 	}
 
 }

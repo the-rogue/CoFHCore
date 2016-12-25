@@ -67,7 +67,7 @@ public class CommandTPS implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] arguments) throws CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] arguments) throws CommandException {
 
 		if (arguments.length < 2) {
 			double tps = getTps(null);
@@ -145,7 +145,7 @@ public class CommandTPS implements ISubCommand {
 			}
 			return CommandBase.getListOfStringsMatchingLastWord(args, worldIDs.toArray(new String[] { "" }));
 		}
-		return null;
+		return new ArrayList<String>();
 	}
 
 }

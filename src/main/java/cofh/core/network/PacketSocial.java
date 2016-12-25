@@ -4,6 +4,8 @@ import java.util.LinkedList;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import cofh.CoFHCore;
 import cofh.core.RegistrySocial;
 
@@ -24,11 +26,10 @@ public class PacketSocial extends PacketCoFHBase {
 		switch (PacketTypes.values()[getByte()]) {
 		case FRIEND_LIST:
 			int size = getInt();
-			RegistrySocial.clientPlayerFriends = new LinkedList<String>();
+			RegistrySocial.clientPlayerFriends = new LinkedList<ITextComponent>();
 			for (int i = 0; i < size; i++) {
-				RegistrySocial.clientPlayerFriends.add(getString());
+				RegistrySocial.clientPlayerFriends.add(new TextComponentString(getString()));
 			}
-			java.util.Collections.sort(RegistrySocial.clientPlayerFriends);
 			CoFHCore.proxy.updateFriendListGui();
 			return;
 		case ADD_FRIEND:

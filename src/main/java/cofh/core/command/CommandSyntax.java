@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
@@ -37,7 +38,7 @@ public class CommandSyntax implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 
 		List<String> commandList = new ArrayList<String>(CommandHandler.getCommandList());
 		Collections.sort(commandList, String.CASE_INSENSITIVE_ORDER);
@@ -57,13 +58,7 @@ public class CommandSyntax implements ISubCommand {
 		} catch (NumberInvalidException numberinvalidexception) {
 			String commandName = args[1];
 			if (!CommandHandler.getCommandExists(commandName)) {
-				try
-				{
-					throw new CommandNotFoundException("info.cofh.command.notFound");
-				}
-				catch (CommandNotFoundException e)
-				{
-				}
+				throw new CommandNotFoundException("info.cofh.command.notFound");
 			}
 			sender.addChatMessage(new TextComponentTranslation("info.cofh.command." + commandName + ".syntax"));
 			return;
@@ -87,7 +82,7 @@ public class CommandSyntax implements ISubCommand {
 		if (args.length == 2) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, CommandHandler.getCommandList());
 		}
-		return null;
+		return new ArrayList<String>();
 
 	}
 

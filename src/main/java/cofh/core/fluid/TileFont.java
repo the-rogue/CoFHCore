@@ -1,16 +1,17 @@
 package cofh.core.fluid;
 
-import cofh.api.tileentity.ISidedTexture;
-import cofh.core.block.TileCoFHBase;
-import cpw.mods.fml.common.registry.GameRegistry;
-
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.IIcon;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import cofh.api.tileentity.ISidedTexture;
+import cofh.core.block.TileCoFHBase;
 
 public class TileFont extends TileCoFHBase implements ISidedTexture {
 
@@ -19,8 +20,8 @@ public class TileFont extends TileCoFHBase implements ISidedTexture {
 		GameRegistry.registerTileEntity(TileFont.class, "cofh.Font");
 	}
 
-	Block baseBlock = Blocks.bedrock;
-	IIcon icon = Blocks.bedrock.getBlockTextureFromSide(0);
+	Block baseBlock = Blocks.BEDROCK;
+	ResourceLocation resourcelocation;
 
 	Fluid fluid;
 	BlockFluidBase fluidBlock;
@@ -60,10 +61,10 @@ public class TileFont extends TileCoFHBase implements ISidedTexture {
 		return false;
 	}
 
-	public boolean setIcon(IIcon icon) {
+	public boolean setResourceLocation(ResourceLocation resourcelocation) {
 
-		if (icon != null) {
-			this.icon = icon;
+		if (resourcelocation != null) {
+			this.resourcelocation = resourcelocation;
 			return true;
 		}
 		return false;
@@ -89,21 +90,24 @@ public class TileFont extends TileCoFHBase implements ISidedTexture {
 		}
 		timeTracker = worldTime + productionDelay;
 
-		int x = xCoord, y = yCoord, z = zCoord, meta = worldObj.getBlockMetadata(x, y, z);
-		ForgeDirection dir = ForgeDirection.getOrientation(meta ^ 1);
+		BlockPos pos = this.getPos();
+		IBlockState state = worldObj.getBlockState(pos);
 
-		if (fluidBlock.canDisplace(worldObj, x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ)) {
-			worldObj.setBlock(x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, fluidBlock, 0, 3);
-			worldObj.notifyBlockChange(x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ, getBlockType());
-
-			if (amount > 0) {
-				amount--;
-			}
-			if (amount == 0) {
-				// if (worldObj.rand) TODO: depleted font state
-				worldObj.setBlockMetadataWithNotify(xCoord, yCoord, zCoord, meta | 8, 2);
-			}
+		for (EnumFacing f : EnumFacing.values()) {
+				if (fluidBlock.canDisplace(worldObj, new BlockPos(pos).offset(f))) {
+					worldObj.setBlockState(new BlockPos(pos).offset(f), fluidBlock.getDefaultState(), 3);
+					worldObj.notifyBlockOfStateChange(new BlockPos(pos).offset(f), getBlockType());
+					
+					if (amount > 0) {
+						amount--;
+					}
+					if (amount == 0) {
+						// if (worldObj.rand) TODO: depleted font state
+						worldObj.notifyNeighborsOfStateChange(pos, state.getBlock());
+					}
+				}
 		}
+
 	}
 
 	/* NBT METHODS */
@@ -115,18 +119,18 @@ public class TileFont extends TileCoFHBase implements ISidedTexture {
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt) {
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 
-		super.writeToNBT(nbt);
+		return super.writeToNBT(nbt);
 
 	}
 
 	/* ISidedTexture */
 	@Override
-	public IIcon getTexture(int side, int pass) {
+	public ResourceLocation getTexture(int side, int pass) {
 
 		// FIXME: overlay an icon on side we eject fluids?
-		return icon;
+		return resourcelocation;
 	}
 
 }

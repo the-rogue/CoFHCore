@@ -1,5 +1,6 @@
 package cofh.core.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -9,6 +10,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.state.pattern.BlockMatcher;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.PlayerNotFoundException;
@@ -39,17 +41,11 @@ public class CommandCountBlock implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
 
 		if (args.length < 6) {
 			sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
-			try
-			{
-				throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
-			}
-			catch (WrongUsageException e)
-			{
-			}
+			throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
 		}
 		World world = sender.getEntityWorld();
 		if (world.isRemote) {
@@ -281,7 +277,7 @@ public class CommandCountBlock implements ISubCommand {
 					int cX = x & 15, cZ = z & 15;
 					for (int y = yS; y <= yL; ++y) {
 						boolean v = meta == -1 || chunk.getBlockState(new BlockPos(cX, y, cZ)).getBlock().getMetaFromState(chunk.getBlockState(new BlockPos(cX, y, cZ))) == meta;
-						if (v && chunk.getBlockState(cX, y, cZ) == block) {
+						if (v && chunk.getBlockState(cX, y, cZ).getBlock() == block) {
 							++blockCounter;
 						}
 					}
@@ -300,7 +296,19 @@ public class CommandCountBlock implements ISubCommand {
 		if (args.length == 2) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, server.getAllUsernames());
 		}
-		return null;
+		if (args.length >= 2){
+			try {
+				Integer.parseInt(args[1]);
+				if (args.length >= 8) {
+					return CommandBase.getListOfStringsMatchingLastWord(args, Block.REGISTRY.getKeys());
+				}
+			} catch (NumberFormatException e) {
+				if (args.length >= 6) {
+					return CommandBase.getListOfStringsMatchingLastWord(args, Block.REGISTRY.getKeys());
+				}
+			}
+		}
+		return new ArrayList<String>();
 	}
 
 }

@@ -1,13 +1,13 @@
 package cofh.core.gui;
 
-import cofh.core.render.IconRegistry;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.inventory.Container;
+import net.minecraft.util.ResourceLocation;
 import cofh.lib.gui.GuiBase;
 import cofh.lib.gui.GuiProps;
 import cofh.lib.util.helpers.StringHelper;
-
-import net.minecraft.inventory.Container;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.ResourceLocation;
 
 public abstract class GuiBaseAdv extends GuiBase {
 
@@ -59,26 +59,26 @@ public abstract class GuiBaseAdv extends GuiBase {
 
 	/* HELPERS */
 	@Override
-	public void drawButton(IIcon icon, int x, int y, int spriteSheet, int mode) {
+	public void drawButton(TextureAtlasSprite icon, int x, int y, int spriteSheet, int mode) {
 
+		TextureMap map = Minecraft.getMinecraft().getTextureMapBlocks();
 		switch (mode) {
 		case 0:
-			drawIcon(IconRegistry.getIcon("IconButton"), x, y, 1);
+			drawIcon(map.getAtlasSprite("cofh:icons/Icon_Button"), x, y, 1);
 			break;
 		case 1:
-			drawIcon(IconRegistry.getIcon("IconButtonHighlight"), x, y, 1);
+			drawIcon(map.getAtlasSprite("cofh:icons/Icon_Button_Highlight"), x, y, 1);
 			break;
 		default:
-			drawIcon(IconRegistry.getIcon("IconButtonInactive"), x, y, 1);
+			drawIcon(map.getAtlasSprite("cofh:icons/Icon_Button_Inactive"), x, y, 1);
 			break;
 		}
 		drawIcon(icon, x, y, spriteSheet);
 	}
 
 	@Override
-	public IIcon getIcon(String name) {
-
-		return IconRegistry.getIcon(name);
+	public TextureAtlasSprite getIcon(String name) {
+		return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(name);
 	}
 
 }

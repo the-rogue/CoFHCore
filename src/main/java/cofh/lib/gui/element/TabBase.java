@@ -204,7 +204,7 @@ public abstract class TabBase extends ElementBase {
 		}
 	}
 
-	protected void drawTabIcon(String iconName) {
+	protected void drawTabIcon(ResourceLocation iconName) {
 
 		gui.drawIcon(iconName, posXOffset(), posY + 3, 1);
 	}

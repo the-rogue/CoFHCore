@@ -1,20 +1,20 @@
 package cofh.core.render.customcharrendering;
 
-import cofh.core.render.CoFHFontRenderer;
-import cofh.core.render.IconRegistry;
-
-import net.minecraft.util.IIcon;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
+
+import cofh.core.render.CoFHFontRenderer;
 
 public class RenderIcon implements ICustomCharRenderer {
 
 	public final char underlyingCharacter;
 	private final ResourceLocation textureSheet;
-	private final String icon;
+	private final ResourceLocation icon;
 
-	public RenderIcon(char underlyingCharacter, ResourceLocation textureSheet, String icon) {
+	public RenderIcon(char underlyingCharacter, ResourceLocation textureSheet, ResourceLocation icon) {
 
 		this.underlyingCharacter = underlyingCharacter;
 		this.textureSheet = textureSheet;
@@ -24,7 +24,7 @@ public class RenderIcon implements ICustomCharRenderer {
 	@Override
 	public float renderChar(char letter, boolean italicFlag, float x, float y, CoFHFontRenderer fontRenderer) {
 
-		IIcon icon = IconRegistry.getIcon(this.icon);
+		TextureAtlasSprite icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(this.icon.toString());
 		if (icon == null) {
 			return 0;
 		}
@@ -59,7 +59,7 @@ public class RenderIcon implements ICustomCharRenderer {
 	@Override
 	public int getCharWidth(char letter, CoFHFontRenderer coFHFontRender) {
 
-		IIcon icon = IconRegistry.getIcon(this.icon);
+		TextureAtlasSprite icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(this.icon.toString());
 		if (icon == null) {
 			return 0;
 		}
@@ -70,7 +70,7 @@ public class RenderIcon implements ICustomCharRenderer {
 		return (int) Math.ceil(w / h * 8 - 0.0002f);
 	}
 
-	public static void addRenderer(char c, ResourceLocation texture, String icon, CoFHFontRenderer fontRenderer) {
+	public static void addRenderer(char c, ResourceLocation texture, ResourceLocation icon, CoFHFontRenderer fontRenderer) {
 
 		fontRenderer.renderOverrides.put(c, new RenderIcon(c, texture, icon));
 	}

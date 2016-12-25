@@ -3,6 +3,7 @@ package cofh.core.command;
 import gnu.trove.map.TMap;
 import gnu.trove.map.hash.THashMap;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -119,7 +120,7 @@ public class CommandHandler extends CommandBase {
 
 	@Override
 	public List<String> getCommandAliases() {
-		return null;
+		return new ArrayList<String>();
 	}
 
 	@Override
@@ -137,7 +138,7 @@ public class CommandHandler extends CommandBase {
 		ISubCommand command = commands.get(arguments[0]);
 		if (command != null) {
 			if (canUseCommand(sender, command.getPermissionLevel(), command.getCommandName())) {
-				command.handleCommand(server, sender, arguments);
+				command.execute(server, sender, arguments);
 				return;
 			}
 			throw new CommandException("commands.generic.permission");
@@ -153,7 +154,7 @@ public class CommandHandler extends CommandBase {
 		} else if (commands.containsKey(par2ArrayOfStr[0])) {
 			return commands.get(par2ArrayOfStr[0]).getTabCompletionOptions(server, par1ICommandSender, par2ArrayOfStr, pos);
 		}
-		return null;
+		return new ArrayList<String>();
 	}
 
 	private static class DummyCommand extends CommandBase {

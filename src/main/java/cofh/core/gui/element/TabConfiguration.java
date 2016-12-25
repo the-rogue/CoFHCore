@@ -3,6 +3,7 @@ package cofh.core.gui.element;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 
 import org.lwjgl.opengl.GL11;
@@ -123,7 +124,7 @@ public class TabConfiguration extends TabBase {
 	@Override
 	protected void drawForeground() {
 
-		drawTabIcon("IconConfig");
+		drawTabIcon(new ResourceLocation("cofh:icons/Icon_Config"));
 		if (!isFullyOpened()) {
 			return;
 		}

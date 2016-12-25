@@ -3,6 +3,7 @@ package cofh.lib.util;
 import java.util.Collection;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandom;
 
@@ -26,7 +27,13 @@ public final class WeightedRandomBlock extends WeightedRandom.Item {
 
 		this(Block.getBlockFromItem(ore.getItem()), ore.getItemDamage(), weight);
 	}
-
+	public WeightedRandomBlock(IBlockState ore) {
+		this(ore, 100);
+	}
+	public WeightedRandomBlock(IBlockState ore, int weight) {
+		this(ore.getBlock(), ore.getBlock().getMetaFromState(ore), weight);
+	}
+	
 	public WeightedRandomBlock(Block ore) {
 
 		this(ore, 0, 100); // some blocks do not have associated items

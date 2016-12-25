@@ -1,8 +1,7 @@
 package cofh.lib.world;
 
-import static cofh.lib.world.WorldGenMinableCluster.*;
-
-import cofh.lib.util.WeightedRandomBlock;
+import static cofh.lib.world.WorldGenMinableCluster.fabricateList;
+import static cofh.lib.world.WorldGenMinableCluster.generateBlock;
 
 import java.util.List;
 import java.util.Random;
@@ -10,9 +9,11 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import cofh.lib.util.WeightedRandomBlock;
 
 public class WorldGenSparseMinableCluster extends WorldGenerator {
 
@@ -32,7 +33,7 @@ public class WorldGenSparseMinableCluster extends WorldGenerator {
 
 	public WorldGenSparseMinableCluster(List<WeightedRandomBlock> resource, int clusterSize) {
 
-		this(resource, clusterSize, Blocks.stone);
+		this(resource, clusterSize, Blocks.STONE);
 	}
 
 	public WorldGenSparseMinableCluster(ItemStack ore, int clusterSize, Block block) {
@@ -58,13 +59,13 @@ public class WorldGenSparseMinableCluster extends WorldGenerator {
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, int x, int y, int z) {
+	public boolean generate(World world, Random rand, BlockPos pos) {
 
 		int blocks = genClusterSize;
 		float f = rand.nextFloat() * (float) Math.PI;
 		// despite naming, these are not exactly min/max. more like direction
-		float yMin = (y + rand.nextInt(3)) - 2;
-		float yMax = (y + rand.nextInt(3)) - 2;
+		float yMin = (pos.getY() + rand.nextInt(3)) - 2;
+		float yMax = (pos.getY() + rand.nextInt(3)) - 2;
 		// { HACK: at 1 and 2 no ores are ever generated. by doing it this way,
 		// 3 = 1/3rd clusters gen, 2 = 1/6, 1 = 1/12 allowing for much finer
 		// grained rarity than the non-sparse version
@@ -75,10 +76,10 @@ public class WorldGenSparseMinableCluster extends WorldGenerator {
 			++blocks;
 		}
 		// }
-		float xMin = x + 8 + (MathHelper.sin(f) * blocks) / 8F;
-		float xMax = x + 8 - (MathHelper.sin(f) * blocks) / 8F;
-		float zMin = z + 8 + (MathHelper.cos(f) * blocks) / 8F;
-		float zMax = z + 8 - (MathHelper.cos(f) * blocks) / 8F;
+		float xMin = pos.getX() + 8 + (MathHelper.sin(f) * blocks) / 8F;
+		float xMax = pos.getX() + 8 - (MathHelper.sin(f) * blocks) / 8F;
+		float zMin = pos.getZ() + 8 + (MathHelper.cos(f) * blocks) / 8F;
+		float zMax = pos.getZ() + 8 - (MathHelper.cos(f) * blocks) / 8F;
 
 		// optimization so this subtraction doesn't occur every time in the loop
 		xMax -= xMin;
@@ -128,7 +129,7 @@ public class WorldGenSparseMinableCluster extends WorldGenerator {
 							continue;
 						}
 
-						r |= generateBlock(world, blockX, blockY, blockZ, genBlock, cluster);
+						r |= generateBlock(world, new BlockPos(blockX, blockY, blockZ), genBlock, cluster);
 					}
 				}
 			}

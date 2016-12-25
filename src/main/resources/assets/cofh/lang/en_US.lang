@@ -131,6 +131,8 @@ info.cofh.command.pregen.syntax=/cofh pregen {<user> <x chunk radius> <z chunk r
 info.cofh.command.replaceblocks.syntax=/cofh replaceblocks {<user> <x radius> <y radius> <z radius> | <x start> <y start> <z start> <x end> <y end> <z end>} <replaceBlock#meta> [block#meta] [block#meta] ...
 info.cofh.command.reloadworldgen.syntax=/cofh reloadworldgen
 info.cofh.command.unloadchunk.syntax=/cofh unloadchunk
+info.cofh.command.updatechests.syntax=/cofh updatechests [player] {<x radius> <z radius> | <x min> <z min> <x max> <z max>}
+info.cofh.command.hand.syntax=/cofh hand <player> <type of data>
 
 info.cofh.command.syntaxError=Invalid Syntax.
 info.cofh.command.notFound=Unknown command. Try /cofh help for a list of commands

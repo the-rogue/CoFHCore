@@ -1,15 +1,17 @@
 package cofh.lib.world;
 
-import static cofh.lib.world.WorldGenMinableCluster.*;
-
-import cofh.lib.util.WeightedRandomBlock;
+import static cofh.lib.world.WorldGenMinableCluster.canGenerateInBlock;
+import static cofh.lib.world.WorldGenMinableCluster.generateBlock;
 
 import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import cofh.lib.util.WeightedRandomBlock;
 
 public class WorldGenSmallTree extends WorldGenerator {
 
@@ -50,55 +52,59 @@ public class WorldGenSmallTree extends WorldGenerator {
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, int x, int y, int z) {
+	public boolean generate(World world, Random rand, BlockPos pos) {
 
 		int treeHeight = (heightVariance <= 1 ? 0 : rand.nextInt(heightVariance)) + minHeight;
 		int worldHeight = world.getHeight();
+		IBlockState blockstate;
 		Block block;
 
-		if (y + treeHeight + 1 <= worldHeight) {
+		if (pos.getY() + treeHeight + 1 <= worldHeight) {
 			int xOffset;
 			int yOffset;
 			int zOffset;
 
-			if (!canGenerateInBlock(world, x, y - 1, z, genSurface)) {
+			if (!canGenerateInBlock(world, new BlockPos(pos).add(0, -1, 0), genSurface)) {
 				return false;
 			}
 
-			if (y < worldHeight - treeHeight - 1) {
+			if (pos.getY() < worldHeight - treeHeight - 1) {
 				if (treeChecks) {
-					for (yOffset = y; yOffset <= y + 1 + treeHeight; ++yOffset) {
+					for (yOffset = pos.getY(); yOffset <= pos.getY() + 1 + treeHeight; ++yOffset) {
 
-						int radius = getLeafRadius(treeHeight, yOffset - y, true);
+						int radius = getLeafRadius(treeHeight, yOffset - pos.getY(), true);
 
 						if (yOffset >= 0 & yOffset < worldHeight) {
 							if (radius == 0) {
-								block = world.getBlock(x, yOffset, z);
-								if (!(block.isLeaves(world, x, yOffset, z) || block.isAir(world, x, yOffset, z) || block.isReplaceable(world, x, yOffset, z)
-										|| block.canBeReplacedByLeaves(world, x, yOffset, z) || canGenerateInBlock(world, x, yOffset, z, genBlock))) {
+								blockstate = world.getBlockState(new BlockPos(pos.getX(), yOffset, pos.getZ()));
+								block = blockstate.getBlock();
+								if (!(block.isLeaves(blockstate, world, new BlockPos(pos.getX(), yOffset, pos.getZ())) || block.isAir(blockstate, world, new BlockPos(pos.getX(), yOffset, pos.getZ())) || block.isReplaceable(world, new BlockPos(pos.getX(), yOffset, pos.getZ()))
+										|| block.canBeReplacedByLeaves(blockstate, world, new BlockPos(pos.getX(), yOffset, pos.getZ())) || canGenerateInBlock(world, new BlockPos(pos.getX(), yOffset, pos.getZ()), genBlock))) {
 									return false;
 								}
 
-								if (!waterLoving && yOffset >= y + 1) {
+								if (!waterLoving && yOffset >= pos.getY() + 1) {
 									radius = 1;
-									for (xOffset = x - radius; xOffset <= x + radius; ++xOffset) {
-										for (zOffset = z - radius; zOffset <= z + radius; ++zOffset) {
-											block = world.getBlock(xOffset, yOffset, zOffset);
+									for (xOffset = pos.getX() - radius; xOffset <= pos.getX() + radius; ++xOffset) {
+										for (zOffset = pos.getZ() - radius; zOffset <= pos.getZ() + radius; ++zOffset) {
+											blockstate = world.getBlockState(new BlockPos(xOffset, yOffset, zOffset));
+											block = blockstate.getBlock();
 
-											if (block.getMaterial().isLiquid()) {
+											if (blockstate.getMaterial().isLiquid()) {
 												return false;
 											}
 										}
 									}
 								}
 							} else {
-								for (xOffset = x - radius; xOffset <= x + radius; ++xOffset) {
-									for (zOffset = z - radius; zOffset <= z + radius; ++zOffset) {
-										block = world.getBlock(xOffset, yOffset, zOffset);
+								for (xOffset = pos.getX() - radius; xOffset <= pos.getX() + radius; ++xOffset) {
+									for (zOffset = pos.getZ() - radius; zOffset <= pos.getZ() + radius; ++zOffset) {
+										blockstate = world.getBlockState(new BlockPos(xOffset, yOffset, zOffset));
+										block = blockstate.getBlock();
 
-										if (!(block.isLeaves(world, xOffset, yOffset, zOffset) || block.isAir(world, xOffset, yOffset, zOffset)
-												|| block.canBeReplacedByLeaves(world, xOffset, yOffset, zOffset) || canGenerateInBlock(world, xOffset, yOffset,
-													zOffset, genBlock))) {
+										if (!(block.isLeaves(blockstate, world, new BlockPos(xOffset, yOffset, zOffset))) || block.isAir(blockstate, world, new BlockPos(xOffset, yOffset, zOffset))
+												|| block.canBeReplacedByLeaves(blockstate, world, new BlockPos(xOffset, yOffset, zOffset)) || canGenerateInBlock(world, new BlockPos(xOffset, yOffset,
+													zOffset), genBlock)) {
 											return false;
 										}
 									}
@@ -109,50 +115,53 @@ public class WorldGenSmallTree extends WorldGenerator {
 						}
 					}
 
-					if (genSurface != null && !canGenerateInBlock(world, x, y - 1, z, genSurface)) {
+					if (genSurface != null && !canGenerateInBlock(world, new BlockPos(pos).add(0, -1, 0), genSurface)) {
 						return false;
 					}
-					block = world.getBlock(x, y - 1, z);
-					block.onPlantGrow(world, x, y - 1, z, x, y, z);
+					blockstate = world.getBlockState(new BlockPos(pos).add(0, -1, 0));
+					block = blockstate.getBlock();
+					block.onPlantGrow(blockstate, world, new BlockPos(pos).add(0, -1, 0), pos);
 				}
 
 				boolean r = false;
 
-				for (yOffset = y; yOffset <= y + treeHeight; ++yOffset) {
+				for (yOffset = pos.getY(); yOffset <= pos.getY() + treeHeight; ++yOffset) {
 
-					int var12 = yOffset - (y + treeHeight);
-					int radius = getLeafRadius(treeHeight, yOffset - y, false);
+					int var12 = yOffset - (pos.getY() + treeHeight);
+					int radius = getLeafRadius(treeHeight, yOffset - pos.getY(), false);
 					if (radius <= 0) {
 						continue;
 					}
 
-					for (xOffset = x - radius; xOffset <= x + radius; ++xOffset) {
-						int xPos = xOffset - x, t;
+					for (xOffset = pos.getX() - radius; xOffset <= pos.getX() + radius; ++xOffset) {
+						int xPos = xOffset - pos.getX(), t;
 						xPos = (xPos + (t = xPos >> 31)) ^ t;
 
-						for (zOffset = z - radius; zOffset <= z + radius; ++zOffset) {
-							int zPos = zOffset - z;
+						for (zOffset = pos.getZ() - radius; zOffset <= pos.getZ() + radius; ++zOffset) {
+							int zPos = zOffset - pos.getZ();
 							zPos = (zPos + (t = zPos >> 31)) ^ t;
 
-							block = world.getBlock(xOffset, yOffset, zOffset);
+							blockstate = world.getBlockState(new BlockPos(xOffset, yOffset, zOffset));
+							block = blockstate.getBlock();
 
 							if (((xPos != radius | zPos != radius) || (!leafVariance || (rand.nextInt(2) != 0 && var12 != 0)))
-									&& ((treeChecks ? block.isLeaves(world, xOffset, yOffset, zOffset) || block.isAir(world, xOffset, yOffset, zOffset)
-											|| block.canBeReplacedByLeaves(world, xOffset, yOffset, zOffset) : false) || canGenerateInBlock(world, xOffset,
-												yOffset, zOffset, genBlock))) {
-								r |= generateBlock(world, xOffset, yOffset, zOffset, leaves);
+									&& ((treeChecks ? block.isLeaves(blockstate, world, new BlockPos(xOffset, yOffset, zOffset)) || block.isAir(blockstate, world, new BlockPos(xOffset, yOffset, zOffset))
+											|| block.canBeReplacedByLeaves(blockstate, world, new BlockPos(xOffset, yOffset, zOffset)) : false) || canGenerateInBlock(world, new BlockPos(xOffset,
+												yOffset, zOffset), genBlock))) {
+								r |= generateBlock(world, new BlockPos(xOffset, yOffset, zOffset), leaves);
 							}
 						}
 					}
 				}
 
 				for (yOffset = 0; yOffset < treeHeight; ++yOffset) {
-					block = world.getBlock(x, y + yOffset, z);
+					blockstate = world.getBlockState(new BlockPos(pos.getX(), pos.getY() + yOffset, pos.getZ()));
+					block = blockstate.getBlock();
 
-					if ((treeChecks ? block.isAir(world, x, y + yOffset, z) || block.isLeaves(world, x, y + yOffset, z)
-							|| block.isReplaceable(world, x, y + yOffset, z) : false)
-							|| canGenerateInBlock(world, x, yOffset + y, z, genBlock)) {
-						r |= generateBlock(world, x, yOffset + y, z, trunk);
+					if ((treeChecks ? block.isAir(blockstate, world, new BlockPos(pos.getX(), pos.getY() + yOffset, pos.getZ())) || block.isLeaves(blockstate, world, new BlockPos(pos.getX(), pos.getY() + yOffset, pos.getZ()))
+							|| block.isReplaceable(world, new BlockPos(pos.getX(), pos.getY() + yOffset, pos.getZ())) : false)
+							|| canGenerateInBlock(world, new BlockPos(pos.getX(), yOffset + pos.getY(), pos.getZ()), genBlock)) {
+						r |= generateBlock(world, new BlockPos(pos.getX(), yOffset + pos.getY(), pos.getZ()), trunk);
 					}
 				}
 

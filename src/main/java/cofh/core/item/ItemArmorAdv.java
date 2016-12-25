@@ -1,24 +1,25 @@
 package cofh.core.item;
 
-import cofh.lib.util.helpers.ItemHelper;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-
 import java.util.Collection;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
+import cofh.api.core.IInitializer;
+import cofh.lib.util.helpers.ItemHelper;
 
-public class ItemArmorAdv extends ItemArmor {
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
+public abstract class ItemArmorAdv extends ItemArmor implements IInitializer {
 
 	public String repairIngot = "";
-	public String[] textures = new String[2];
 	protected Multimap<String, AttributeModifier> properties = HashMultimap.create();
 	protected boolean showInCreative = true;
 
@@ -30,12 +31,6 @@ public class ItemArmorAdv extends ItemArmor {
 	public ItemArmorAdv setRepairIngot(String repairIngot) {
 
 		this.repairIngot = repairIngot;
-		return this;
-	}
-
-	public ItemArmorAdv setArmorTextures(String[] textures) {
-
-		this.textures = textures;
 		return this;
 	}
 
@@ -57,7 +52,7 @@ public class ItemArmorAdv extends ItemArmor {
 	@Override
 	public boolean getIsRepairable(ItemStack itemToRepair, ItemStack stack) {
 
-		return ItemHelper.isOreNameEqual(stack, repairIngot);
+		return ItemHelper.isOreNameEqual(stack, new String[]{repairIngot});
 	}
 
 
@@ -79,5 +74,9 @@ public class ItemArmorAdv extends ItemArmor {
 
 		return properties.removeAll(attribute);
 	}
-
+	@Override
+	public boolean initialize() {
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		return true;
+	}
 }

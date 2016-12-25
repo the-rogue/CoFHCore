@@ -3,6 +3,7 @@ package cofh.core.command;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.hash.TObjectIntHashMap;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,7 +39,7 @@ public class CommandKillAll implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] arguments) {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] arguments) {
 
 		int killCount = 0;
 		String curName;
@@ -91,7 +92,7 @@ public class CommandKillAll implements ISubCommand {
 
 	@Override
 	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender par1ICommandSender, String[] par2ArrayOfStr, @Nullable BlockPos pos) {
-		return null;
+		return new ArrayList<String>();
 	}
 
 }

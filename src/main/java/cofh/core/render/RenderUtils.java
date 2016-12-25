@@ -1,50 +1,51 @@
 package cofh.core.render;
-
-import cofh.lib.render.RenderHelper;
-import cofh.lib.util.helpers.BlockHelper;
-import cofh.repack.codechicken.lib.colour.Colour;
-import cofh.repack.codechicken.lib.colour.ColourRGBA;
-import cofh.repack.codechicken.lib.render.CCRenderState;
-import cofh.repack.codechicken.lib.render.uv.IconTransformation;
-import cofh.repack.codechicken.lib.render.uv.UV;
-import cofh.repack.codechicken.lib.vec.Vector3;
-
+/*
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.IItemRenderer.ItemRenderType;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.lwjgl.opengl.GL11;
 
+import cofh.lib.render.RenderHelper;
+import cofh.lib.util.helpers.BlockHelper;
+import cofh.repack.codechicken.lib.colour.Colour;
+import cofh.repack.codechicken.lib.colour.ColourARGB;
+import cofh.repack.codechicken.lib.colour.ColourRGBA;
+import cofh.repack.codechicken.lib.render.CCRenderState;
+import cofh.repack.codechicken.lib.vec.Vector3;
+import cofh.repack.codechicken.lib.vec.uv.IconTransformation;
+import cofh.repack.codechicken.lib.vec.uv.UV;
+*/
 public class RenderUtils {
-
+/*
 	public static class ScaledIconTransformation extends IconTransformation {
 
 		double su = 0.0F;
 		double sv = 0.0F;
 
-		public ScaledIconTransformation(IIcon icon) {
+		public ScaledIconTransformation(TextureAtlasSprite icon) {
 
 			super(icon);
 		}
 
-		public ScaledIconTransformation(IIcon icon, double scaleu, double scalev) {
+		public ScaledIconTransformation(TextureAtlasSprite icon, double scaleu, double scalev) {
 
 			super(icon);
 
@@ -73,15 +74,15 @@ public class RenderUtils {
 	public static ScaledIconTransformation[] renderTransformations = new ScaledIconTransformation[4];
 
 	static {
-		renderTransformations[0] = new ScaledIconTransformation(Blocks.stone.getIcon(0, 0));
-		renderTransformations[1] = new ScaledIconTransformation(Blocks.stone.getIcon(0, 0), -1F, 0F);
-		renderTransformations[2] = new ScaledIconTransformation(Blocks.stone.getIcon(0, 0), 0F, -1F);
-		renderTransformations[3] = new ScaledIconTransformation(Blocks.stone.getIcon(0, 0), -1F, -1F);
+		renderTransformations[0] = new ScaledIconTransformation(Blocks.STONE.getIcon(0, 0));
+		renderTransformations[1] = new ScaledIconTransformation(Blocks.STONE.getIcon(0, 0), -1F, 0F);
+		renderTransformations[2] = new ScaledIconTransformation(Blocks.STONE.getIcon(0, 0), 0F, -1F);
+		renderTransformations[3] = new ScaledIconTransformation(Blocks.STONE.getIcon(0, 0), -1F, -1F);
 	}
 
 	public static Vector3 renderVector = new Vector3();
 
-	public static ScaledIconTransformation getIconTransformation(IIcon icon) {
+	public static ScaledIconTransformation getIconTransformation(TextureAtlasSprite icon) {
 
 		if (icon != null) {
 			renderTransformations[0].icon = icon;
@@ -132,7 +133,7 @@ public class RenderUtils {
 
 	public static void setFluidRenderColor(FluidStack fluid) {
 
-		CCRenderState.baseColour = (0xFF | (fluid.getFluid().getColor(fluid) << 8));
+		CCRenderState.instance().baseColour = (0xFF | (fluid.getFluid().getColor(fluid) << 8));
 	}
 
 	public static void preItemRender() {
@@ -141,26 +142,26 @@ public class RenderUtils {
 		GL11.glEnable(GL11.GL_ALPHA_TEST);
 		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
 
-		CCRenderState.reset();
-		CCRenderState.pullLightmap();
-		CCRenderState.useNormals = true;
+		CCRenderState.instance().reset();
+		CCRenderState.instance().pullLightmap();
+		CCRenderState.instance().useNormals = true;
 	}
 
 	public static void postItemRender() {
 
-		CCRenderState.useNormals = false;
+		CCRenderState.instance().useNormals = false;
 
 		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
 	}
 
-	public static void preWorldRender(IBlockAccess world, int x, int y, int z) {
+	public static void preWorldRender(IBlockAccess world, BlockPos pos) {
 
-		CCRenderState.reset();
-		CCRenderState.setColour(0xFFFFFFFF);
-		CCRenderState.setBrightness(world, x, y, z);
+		CCRenderState.instance().reset();
+		CCRenderState.instance().setColour(new ColourARGB(255,255,255,255));
+		CCRenderState.instance().setBrightness(world, pos);
 	}
 
-	public static void renderMask(IIcon maskIcon, IIcon subIcon, Colour maskColor, ItemRenderType type) {
+	public static void renderMask(TextureAtlasSprite maskIcon, TextureAtlasSprite subIcon, Colour maskColor, ItemRenderType type) {
 
 		if (maskIcon == null || subIcon == null) {
 			return;
@@ -173,9 +174,10 @@ public class RenderUtils {
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
 		GL11.glDisable(GL11.GL_CULL_FACE);
-		Tessellator tessellator = Tessellator.instance;
-		tessellator.startDrawingQuads();
-		tessellator.setNormal(0, 0, 1);
+		Tessellator tessellator = Tessellator.getInstance();
+		VertexBuffer worldrenderer = tessellator.getBuffer();
+		worldrenderer.begin(7, );
+		worldrenderer.setNormal(0, 0, 1);
 		if (type.equals(ItemRenderType.INVENTORY)) {
 			preRenderIconInv(maskIcon, 10);
 		} else {
@@ -491,6 +493,6 @@ public class RenderUtils {
 		int brX = br & 65535;
 		int brY = br >>> 16;
 		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, brX, brY);
-	}
+	}*/
 
 }

@@ -1,5 +1,6 @@
 package cofh.core.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -8,7 +9,6 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
-import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -34,7 +34,7 @@ public class CommandEnchant implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
 
 		int l = args.length;
 		int i = 1;
@@ -44,13 +44,7 @@ public class CommandEnchant implements ISubCommand {
 		case 0:
 		case 1:
 			sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
-			try
-			{
-				throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
-			}
-			catch (WrongUsageException e)
-			{
-			}
+			throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
 		default:
 		case 4:
 		case 3:
@@ -60,28 +54,22 @@ public class CommandEnchant implements ISubCommand {
 				if (l != 3) {
 					sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
 					sender.addChatMessage(new TextComponentTranslation("info.cofh.command." + getCommandName() + ".syntax"));
-						throw t;
+					throw t;
 				}
 				--i;
 			}
 		case 2:
 			if (player == null) {
-				try
-				{
-					player = CommandBase.getCommandSenderAsPlayer(sender);
-				}
-				catch (PlayerNotFoundException e)
-				{
-				}
+				player = CommandBase.getCommandSenderAsPlayer(sender);
 			}
-			int id = CommandBase.parseInt(args[i++]);
+			String id = args[i++];
 			int level = 1;
 			ItemStack itemstack = player.inventory.getCurrentItem();
 
 			if (itemstack == null) {
 				throw new CommandException("commands.enchant.noItem", new Object[0]);
 			} else {
-				Enchantment enchantment = Enchantment.getEnchantmentByID(id);
+				Enchantment enchantment = Enchantment.getEnchantmentByLocation(id);
 
 				if (enchantment == null) {
 					throw new NumberInvalidException("commands.enchant.notFound", new Object[] { Integer.valueOf(id) });
@@ -102,7 +90,10 @@ public class CommandEnchant implements ISubCommand {
 		if (args.length == 2) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, server.getAllUsernames());
 		}
-		return null;
+		if (args.length == 3) {
+			return CommandBase.getListOfStringsMatchingLastWord(args, Enchantment.REGISTRY.getKeys());
+		}
+		return new ArrayList<String>();
 	}
 
 }

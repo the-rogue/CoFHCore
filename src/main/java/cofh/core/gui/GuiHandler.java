@@ -2,6 +2,7 @@ package cofh.core.gui;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import cofh.core.block.TileCoFHBase;
@@ -21,7 +22,7 @@ public class GuiHandler implements IGuiHandler {
 
 		switch (id) {
 		case TILE_ID:
-			TileEntity tile = world.getTileEntity(x, y, z);
+			TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
 			if (tile instanceof TileCoFHBase) {
 				return ((TileCoFHBase) tile).getGuiClient(player.inventory);
 			}
@@ -40,7 +41,7 @@ public class GuiHandler implements IGuiHandler {
 
 		switch (id) {
 		case TILE_ID:
-			TileEntity tile = world.getTileEntity(x, y, z);
+			TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
 			if (tile instanceof TileCoFHBase) {
 				return ((TileCoFHBase) tile).getGuiServer(player.inventory);
 			}

@@ -96,7 +96,7 @@ public class InventoryHelper {
 	// IInventoryHandler is not currently implemented or used. Possibly in the future.
 
 	/* IInventory Interaction */
-	public static ItemStack extractItemStackFromInventory(IInventory inventory, int side) {
+	public static ItemStack extractItemStackFromInventory(IInventory inventory, EnumFacing side) {
 
 		if (inventory == null) {
 			return null;
@@ -105,7 +105,7 @@ public class InventoryHelper {
 
 		if (inventory instanceof ISidedInventory) {
 			ISidedInventory sidedInv = (ISidedInventory) inventory;
-			int slots[] = sidedInv.getAccessibleSlotsFromSide(side);
+			int slots[] = sidedInv.getSlotsForFace(side);
 			for (int i = 0; i < slots.length && retStack == null; i++) {
 				if (sidedInv.getStackInSlot(i) != null && sidedInv.canExtractItem(i, sidedInv.getStackInSlot(i), side)) {
 					retStack = sidedInv.getStackInSlot(i).copy();
@@ -135,7 +135,7 @@ public class InventoryHelper {
 
 		if (inventory instanceof ISidedInventory) {
 			ISidedInventory sidedInv = (ISidedInventory) inventory;
-			int slots[] = sidedInv.getAccessibleSlotsFromSide(side);
+			int slots[] = sidedInv.getSlotsForFace(side);
 
 			if (slots == null) {
 				return stack;
@@ -173,14 +173,14 @@ public class InventoryHelper {
 		return stack;
 	}
 
-	public static ItemStack simulateInsertItemStackIntoInventory(IInventory inventory, ItemStack stack, int side) {
+	public static ItemStack simulateInsertItemStackIntoInventory(IInventory inventory, ItemStack stack, EnumFacing side) {
 
 		if (stack == null || inventory == null) {
 			return null;
 		}
 		if (inventory instanceof ISidedInventory) {
 			ISidedInventory sidedInv = (ISidedInventory) inventory;
-			int slots[] = sidedInv.getAccessibleSlotsFromSide(side);
+			int slots[] = sidedInv.getSlotsForFace(side);
 
 			if (slots == null) {
 				return stack;
@@ -377,7 +377,7 @@ public class InventoryHelper {
 		if (tile instanceof IInventory) {
 			stack = insertItemStackIntoInventory((IInventory) tile, stack, side.getOpposite());
 		} else {
-			stack = ((IItemDuct) tile).insertItem(EnumFacing., stack);
+			stack = ((IItemDuct) tile).insertItem(side.getOpposite(), stack);
 		}
 		return stack;
 	}

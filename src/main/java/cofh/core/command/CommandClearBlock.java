@@ -3,6 +3,7 @@ package cofh.core.command;
 import gnu.trove.iterator.hash.TObjectHashIterator;
 import gnu.trove.set.hash.THashSet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -12,6 +13,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.state.pattern.BlockMatcher;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.PlayerNotFoundException;
@@ -45,17 +47,11 @@ public class CommandClearBlock implements ISubCommand {
 	}
 
 	@Override
-	public void handleCommand(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws NumberInvalidException, CommandException {
 
 		if (args.length < 6) {
 			sender.addChatMessage(new TextComponentTranslation("info.cofh.command.syntaxError"));
-			try
-			{
-				throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
-			}
-			catch (WrongUsageException e)
-			{
-			}
+			throw new WrongUsageException("info.cofh.command." + getCommandName() + ".syntax");
 		}
 		World world = sender.getEntityWorld();
 		if (world.isRemote) {
@@ -147,7 +143,7 @@ public class CommandClearBlock implements ISubCommand {
 		long blockCounter = ((long) xL - xS) * ((long) yL - yS) * ((long) zL - zS);
 		CommandHandler.logAdminCommand(sender, this, "info.cofh.command.clearblocks.start", blockCounter, xS, yS, zS, xL, yL, zL);
 
-		THashSet<Chunk> set = new THashSet<Chunk>();
+		THashSet<UpdateEntry> setchunks = new THashSet<UpdateEntry>();
 
 		blockCounter = 0;
 		for (int e = args.length; i < e; ++i) {
@@ -161,10 +157,9 @@ public class CommandClearBlock implements ISubCommand {
 							for (int y = yS; y <= yL; ++y) {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								if (blockstate.getMaterial().isLiquid()) {
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										++blockCounter;
-										set.add(chunk);
-									}
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+									++blockCounter;
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -177,10 +172,9 @@ public class CommandClearBlock implements ISubCommand {
 							for (int y = yS; y <= yL; ++y) {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								if (blockstate.getBlock().isWood(world,  new BlockPos(x, y, z)) || blockstate.getBlock().isLeaves(blockstate, world, new BlockPos(x, y, z))) {
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
 									++blockCounter;
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										set.add(chunk);
-									}
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -193,10 +187,9 @@ public class CommandClearBlock implements ISubCommand {
 							for (int y = yS; y <= yL; ++y) {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								if (blockstate.getBlock().isReplaceable(world, new BlockPos(x, y, z))) {
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										++blockCounter;
-										set.add(chunk);
-									}
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+									++blockCounter;
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -210,10 +203,9 @@ public class CommandClearBlock implements ISubCommand {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								if (blockstate.getBlock().isReplaceableOreGen(blockstate, world, new BlockPos(x, y, z), BlockMatcher.forBlock(Blocks.STONE)) || blockstate.getBlock().isReplaceableOreGen(blockstate, world, new BlockPos(x, y, z), BlockMatcher.forBlock(Blocks.NETHERRACK))
 										|| blockstate.getBlock().isReplaceableOreGen(blockstate, world, new BlockPos(x, y, z), BlockMatcher.forBlock(Blocks.END_STONE))) {
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
 									++blockCounter;
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										set.add(chunk);
-									}
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -226,10 +218,9 @@ public class CommandClearBlock implements ISubCommand {
 							for (int y = yS; y <= yL; ++y) {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								if (blockstate.getMaterial() == Material.ROCK) {
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										++blockCounter;
-										set.add(chunk);
-									}
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+									++blockCounter;
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -242,10 +233,9 @@ public class CommandClearBlock implements ISubCommand {
 							for (int y = yS; y <= yL; ++y) {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								if (blockstate.getMaterial() == Material.SAND) {
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										++blockCounter;
-										set.add(chunk);
-									}
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+									++blockCounter;
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -260,10 +250,9 @@ public class CommandClearBlock implements ISubCommand {
 								Material m = blockstate.getMaterial();
 								if (m == Material.GRASS || m == Material.GROUND || m == Material.CLAY || m == Material.SNOW || m == Material.CRAFTED_SNOW
 										|| m == Material.ICE || m == Material.PACKED_ICE) {
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										++blockCounter;
-										set.add(chunk);
-									}
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+									++blockCounter;
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -277,10 +266,9 @@ public class CommandClearBlock implements ISubCommand {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								Material m = blockstate.getMaterial();
 								if (m == Material.PLANTS || m == Material.VINE || m == Material.CACTUS || m == Material.LEAVES) {
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										++blockCounter;
-										set.add(chunk);
-									}
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+									++blockCounter;
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -294,10 +282,9 @@ public class CommandClearBlock implements ISubCommand {
 								IBlockState blockstate = chunk.getBlockState(cX, y, cZ);
 								Material m = blockstate.getMaterial();
 								if (m == Material.FIRE || m == Material.LAVA || blockstate.getBlock().isBurning(world, new BlockPos(x, y, z))) {
-									if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-										++blockCounter;
-										set.add(chunk);
-									}
+									chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+									++blockCounter;
+									setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 								}
 							}
 						}
@@ -322,33 +309,34 @@ public class CommandClearBlock implements ISubCommand {
 					int cX = x & 15, cZ = z & 15;
 					for (int y = yS; y <= yL; ++y) {
 						boolean v = meta == -1 || chunk.getBlockState(new BlockPos(cX, y, cZ)).getBlock().getMetaFromState(chunk.getBlockState(new BlockPos(cX, y, cZ))) == meta;
-						if (v && chunk.getBlockState(cX, y, cZ) == block) {
-							if (!(chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState())).equals(null)) {
-								++blockCounter;
-								set.add(chunk);
-							}
+						if (v && chunk.getBlockState(cX, y, cZ).getBlock() == block) {
+							chunk.setBlockState(new BlockPos(cX, y, cZ), Blocks.AIR.getDefaultState());
+							++blockCounter;
+							setchunks.add(new UpdateEntry(chunk, cX, y, cZ));
 						}
 					}
 				}
 			}
 		}
-		if (!set.isEmpty()) {
+		if (!setchunks.isEmpty()) {
 			CommandHandler.logAdminCommand(sender, this, "info.cofh.command.clearblocks.success", blockCounter, xS, yS, zS, xL, yL, zL);
 		} else {
 			CommandHandler.logAdminCommand(sender, this, "info.cofh.command.clearblocks.failure");
 		}
 
 		if (world instanceof WorldServer) {
-			TObjectHashIterator<Chunk> c = set.iterator();
-			for (int k = 0, e = set.size(); k < e; ++k) {
-				Chunk chunk = c.next();
+			TObjectHashIterator<UpdateEntry> c = setchunks.iterator();
+			for (int k = 0, e = setchunks.size(); k < e; ++k) {
+				UpdateEntry entry = c.next();
 				PlayerChunkMap manager = ((WorldServer) world).getPlayerChunkMap();
 				if (manager == null) {
 					return;
 				}
-				PlayerChunkMapEntry watcher = manager.getEntry(chunk.xPosition, chunk.zPosition);
+				PlayerChunkMapEntry watcher = manager.getEntry(entry.chunk.xPosition, entry.chunk.zPosition);
 				if (watcher != null) {
+					watcher.blockChanged(entry.x, entry.y, entry.z);
 					watcher.sentToPlayers();
+					
 				}
 			}
 		}
@@ -360,7 +348,29 @@ public class CommandClearBlock implements ISubCommand {
 		if (args.length == 2) {
 			return CommandBase.getListOfStringsMatchingLastWord(args, server.getAllUsernames());
 		}
-		return null;
+		if (args.length >= 2){
+			try {
+				Integer.parseInt(args[1]);
+				if (args.length >= 8) {
+					return CommandBase.getListOfStringsMatchingLastWord(args, Block.REGISTRY.getKeys());
+				}
+			} catch (NumberFormatException e) {
+				if (args.length >= 6) {
+					return CommandBase.getListOfStringsMatchingLastWord(args, Block.REGISTRY.getKeys());
+				}
+			}
+		}
+		return new ArrayList<String>();
 	}
-
+	public static class UpdateEntry {
+		public final Chunk chunk;
+		public final int x, y, z;
+		
+		public UpdateEntry(Chunk chunk, int x, int y, int z) {
+			this.chunk = chunk;
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+	}
 }

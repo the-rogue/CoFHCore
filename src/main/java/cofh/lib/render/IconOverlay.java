@@ -1,17 +1,17 @@
 package cofh.lib.render;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-import net.minecraft.util.IIcon;
+public class IconOverlay extends TextureAtlasSprite {
 
-public class IconOverlay implements IIcon {
-
-	private IIcon overlayIcon;
+	private String overlayIcon;
 	private float xSegments, ySegments;
 	private float selectedSegmentX, selectedSegmentY;
 
-	public IconOverlay(IIcon overlayIcon, int subX, int subY, int selectedX, int selectedY) {
+	public IconOverlay(String overlayIcon, int subX, int subY, int selectedX, int selectedY) {
+		super(overlayIcon);
 		this.overlayIcon = overlayIcon;
 		xSegments = subX;
 		ySegments = subY;
@@ -19,16 +19,16 @@ public class IconOverlay implements IIcon {
 		selectedSegmentY = selectedY;
 	}
 
-	public IconOverlay(IIcon overlayIcon, int subX, int subY, int index) {
-		this.overlayIcon = overlayIcon;
+	public IconOverlay(String overlayIcon, int subX, int subY, int index) {
+		super(overlayIcon);
 		xSegments = subX;
 		ySegments = subY;
 		selectedSegmentX = index % subX;
 		selectedSegmentY = index / subX;
 	}
 
-	public IconOverlay(IIcon overlayIcon, int subX, int subY, boolean ...sides) {
-		this.overlayIcon = overlayIcon;
+	public IconOverlay(String overlayIcon, int subX, int subY, boolean ...sides) {
+		super(overlayIcon);
 		xSegments = subX;
 		ySegments = subY;
 		int parts = toInt(sides) & 255;
@@ -102,13 +102,13 @@ public class IconOverlay implements IIcon {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public float getMinU() {
-		return overlayIcon.getInterpolatedU(((selectedSegmentX + 0.001f) / xSegments) * 16f);
+		return super.getInterpolatedU(((selectedSegmentX + 0.001f) / xSegments) * 16f);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public float getMaxU() {
-		return overlayIcon.getInterpolatedU(((selectedSegmentX + 0.999f) / xSegments) * 16f);
+		return super.getInterpolatedU(((selectedSegmentX + 0.999f) / xSegments) * 16f);
 	}
 
 	@Override
@@ -122,13 +122,13 @@ public class IconOverlay implements IIcon {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public float getMinV() {
-		return overlayIcon.getInterpolatedV(((selectedSegmentY + 0.001f) / ySegments) * 16f);
+		return super.getInterpolatedV(((selectedSegmentY + 0.001f) / ySegments) * 16f);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public float getMaxV() {
-		return overlayIcon.getInterpolatedV(((selectedSegmentY + 0.999f) / ySegments) * 16f);
+		return super.getInterpolatedV(((selectedSegmentY + 0.999f) / ySegments) * 16f);
 	}
 
 	@Override
@@ -142,19 +142,19 @@ public class IconOverlay implements IIcon {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getIconName() {
-		return overlayIcon.getIconName();
+		return overlayIcon;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public int getIconWidth() {
-		return (int)(overlayIcon.getIconWidth() / xSegments);
+		return (int)(super.getIconWidth() / xSegments);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public int getIconHeight() {
-		return (int)(overlayIcon.getIconHeight() / ySegments);
+		return (int)(super.getIconHeight() / ySegments);
 	}
 
 }

@@ -156,7 +156,7 @@ public class TabAugment extends TabBase {
 	@Override
 	protected void drawForeground() {
 
-		drawTabIcon("IconAugment");
+		drawTabIcon(new ResourceLocation("cofh:icons/Icon_Augment"));
 		if (!isFullyOpened()) {
 			return;
 		}

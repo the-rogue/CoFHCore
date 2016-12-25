@@ -1,15 +1,14 @@
 package cofh.core.fluid;
 
+import gnu.trove.map.TMap;
+import gnu.trove.map.hash.THashMap;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraftforge.fluids.Fluid;
 import cofh.CoFHCore;
 import cofh.core.util.IBakeable;
 import cofh.lib.util.BlockWrapper;
-
-import gnu.trove.map.TMap;
-import gnu.trove.map.hash.THashMap;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraftforge.fluids.Fluid;
 
 public class BlockFluidInteractive extends BlockFluidCoFHBase implements IBakeable {
 
@@ -27,43 +26,43 @@ public class BlockFluidInteractive extends BlockFluidCoFHBase implements IBakeab
 		CoFHCore.registerBakeable(this);
 	}
 
-	public boolean addInteraction(Block preBlock, Block postBlock) {
+	public boolean addInteraction(IBlockState prestate, IBlockState poststate) {
 
-		if (preBlock == null || postBlock == null) {
+		if (prestate == null || poststate == null) {
 			return false;
 		}
-		return addInteraction(preBlock, -1, postBlock, 0);
-	}
-
-	public boolean addInteraction(Block preBlock, int preMeta, Block postBlock, int postMeta) {
-
-		if (preBlock == null || postBlock == null || postMeta < 0) {
-			return false;
-		}
-		if (preMeta < 0) {
-			collisionMap.put(new BlockWrapper(preBlock, preMeta), new BlockWrapper(postBlock, postMeta));
-		} else {
-			collisionMap.put(new BlockWrapper(preBlock, preMeta), new BlockWrapper(postBlock, postMeta));
-		}
+		collisionMap.put(new BlockWrapper(prestate), new BlockWrapper(poststate));
 		return true;
 	}
-
-	public boolean addInteraction(Block preBlock, int preMeta, Block postBlock) {
-
-		return addInteraction(preBlock, preMeta, postBlock, 0);
-	}
-
-	public boolean hasInteraction(Block preBlock, int preMeta) {
-
-		return collisionMap.containsKey(new BlockWrapper(preBlock, preMeta)) || collisionMap.containsKey(new BlockWrapper(preBlock, -1));
-	}
-
-	public BlockWrapper getInteraction(Block preBlock, int preMeta) {
-
-		if (collisionMap.containsKey(new BlockWrapper(preBlock, preMeta))) {
-			return collisionMap.get(new BlockWrapper(preBlock, preMeta));
+	@SuppressWarnings("deprecation")
+	public boolean addInteraction(Block preblock, int minMeta, int maxMeta, IBlockState postState) {
+		boolean sucessful = false;
+		for (int meta = minMeta; meta < maxMeta; meta++) {
+			sucessful = addInteraction(preblock.getStateFromMeta(meta), postState);
 		}
-		return collisionMap.get(new BlockWrapper(preBlock, -1));
+		return sucessful;
+	}
+	@SuppressWarnings("deprecation")
+	public boolean addInteraction(Block preblock, int preMinMeta, int preMaxMeta, Block postblock, int postMeta) {
+		boolean sucessful = false;
+		for (int premeta = preMinMeta; premeta < preMaxMeta; premeta++) {
+			sucessful = addInteraction(preblock.getStateFromMeta(premeta), postblock.getStateFromMeta(postMeta));
+		}
+		return sucessful;
+	}
+
+
+	public boolean hasInteraction(IBlockState state) {
+
+		return collisionMap.containsKey(new BlockWrapper(state)) || collisionMap.containsKey(new BlockWrapper(state.getBlock().getDefaultState()));
+	}
+
+	public BlockWrapper getInteraction(IBlockState state) {
+
+		if (collisionMap.containsKey(new BlockWrapper(state))) {
+			return collisionMap.get(new BlockWrapper(state));
+		}
+		return collisionMap.get(new BlockWrapper(state.getBlock().getDefaultState()));
 	}
 
 	@Override
