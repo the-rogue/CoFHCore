@@ -11,21 +11,24 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import cofh.api.core.IInitializer;
 import cofh.lib.util.helpers.ItemHelper;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-public abstract class ItemArmorAdv extends ItemArmor implements IInitializer {
+public class ItemArmorAdv extends ItemArmor implements IInitializer {
 
 	public String repairIngot = "";
 	protected Multimap<String, AttributeModifier> properties = HashMultimap.create();
 	protected boolean showInCreative = true;
 
-	public ItemArmorAdv(ArmorMaterial material, EntityEquipmentSlot equipmentSlot) {
+	public ItemArmorAdv(ArmorMaterial material, EntityEquipmentSlot equipmentSlot, String modname, String name) {
 
 		super(material, 0, equipmentSlot);
+		setUnlocalizedName(modname + ":" + name);
+		setRegistryName(name);
 	}
 
 	public ItemArmorAdv setRepairIngot(String repairIngot) {
@@ -74,9 +77,23 @@ public abstract class ItemArmorAdv extends ItemArmor implements IInitializer {
 
 		return properties.removeAll(attribute);
 	}
+	
+	@Override
+	public boolean preInit()
+	{
+		GameRegistry.register(this);
+		return true;
+	}
+	
 	@Override
 	public boolean initialize() {
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		return true;
+	}
+
+	@Override
+	public boolean postInit()
+	{
 		return true;
 	}
 }

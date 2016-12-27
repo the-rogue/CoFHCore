@@ -6,6 +6,7 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.pattern.BlockMatcher;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandom;
@@ -168,7 +169,7 @@ public class WorldGenMinableCluster extends WorldGenerator {
 		for (int j = 0, e = mat.length; j < e; ++j) {
 			WeightedRandomBlock genBlock = mat[j];
 			if ((-1 == genBlock.metadata || genBlock.metadata == block.getMetaFromState(blockstate))
-					&& (block.isReplaceableOreGen(blockstate, world, pos, null) || block.isAssociatedBlock(genBlock.block))) {
+					&& (block.isReplaceableOreGen(blockstate, world, pos, BlockMatcher.forBlock(Blocks.STONE)) || block.isAssociatedBlock(genBlock.block))) {
 				return true;
 			}
 		}

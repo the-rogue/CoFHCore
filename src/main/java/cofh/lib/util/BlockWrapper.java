@@ -36,9 +36,6 @@ public final class BlockWrapper {
 		if (blockstate == other.blockstate) {
 			return true;
 		}
-		if (blockstate != null && other.blockstate != null) {
-			return blockstate.getBlock().delegate.get() == other.blockstate.getBlock().delegate.get();
-		}
 		return false;
 	}
 

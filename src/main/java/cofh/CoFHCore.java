@@ -64,7 +64,7 @@ public class CoFHCore extends BaseMod {
 	public static final String modId = "cofhcore";
 	public static final String modName = "CoFH Core";
 	public static final String version = "1.10.2R4.0.0";
-	public static final String version_max = "1.10.2R4.0.0";
+	public static final String version_max = "1.10.2R4.1.0";
 	public static final String dependencies = CoFHProps.FORGE_DEP;
 	public static final String modGuiFactory = "cofh.core.gui.GuiConfigCoreFactory";
 
@@ -121,6 +121,7 @@ public class CoFHCore extends BaseMod {
 		BucketHandler.initialize();
 		FurnaceFuelHandler.initialize();
 		PacketHandler.instance.initialize();
+		
 		RecipeSorter.register("cofh:augment", RecipeAugmentable.class, RecipeSorter.Category.SHAPED, "before:forge:shapedore");
 		RecipeSorter.register("cofh:secure", RecipeSecure.class, RecipeSorter.Category.SHAPED, "before:cofh:upgrade");
 		RecipeSorter.register("cofh:upgrade", RecipeUpgrade.class, RecipeSorter.Category.SHAPED, "before:forge:shapedore");
@@ -131,7 +132,7 @@ public class CoFHCore extends BaseMod {
 
 	@EventHandler
 	public void initialize(FMLInitializationEvent event) {
-
+		
 		/* Register Handlers */
 		NetworkRegistry.INSTANCE.registerGuiHandler(instance, guiHandler);
 		CommandHandler.registerSubCommand(CommandFriend.instance);
@@ -147,13 +148,14 @@ public class CoFHCore extends BaseMod {
 
 		OreDictionaryArbiter.initialize();
 		CoFHEnchantment.postInit();
-
+		
 		proxy.registerKeyBinds();
 		proxy.registerRenderInformation();
 		proxy.registerTickHandlers();
 		proxy.registerPacketInformation();
-
+		
 		PacketHandler.instance.postInit();
+		
 	}
 
 	@EventHandler

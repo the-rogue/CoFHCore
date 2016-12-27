@@ -26,7 +26,7 @@ public class OreDictionaryArbiterProxy extends OreDictionaryProxy {
 	@Override
 	public final int[] getOreID(ItemStack stack) {
 
-		int[] i = new int[0];
+		int[] i = new int[1];
 		i[0] = OreDictionaryArbiter.getOreID(stack);
 		return i;
 	}
@@ -39,7 +39,7 @@ public class OreDictionaryArbiterProxy extends OreDictionaryProxy {
 
 	@Override
 	public final String[] getOreName(ItemStack stack) {
-		String[] s = new String[0];
+		String[] s = new String[1];
 		s[0] = OreDictionaryArbiter.getOreName(OreDictionaryArbiter.getOreID(stack));
 		return s;
 	}

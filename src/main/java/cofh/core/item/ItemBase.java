@@ -17,7 +17,6 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -28,11 +27,12 @@ import cofh.core.render.CoFHFontRenderer;
 import cofh.lib.util.helpers.ItemHelper;
 import cofh.lib.util.helpers.SecurityHelper;
 
-public abstract class ItemBase extends Item implements IInitializer {
+public class ItemBase extends Item implements IInitializer {
 
 	public class ItemEntry {
 
 		public String name;
+		public String modname;
 		public int rarity = 0;
 		public int maxDamage = 0;
 		public boolean altName = false;
@@ -40,6 +40,7 @@ public abstract class ItemBase extends Item implements IInitializer {
 		public ItemEntry(String modname, String name, int rarity, int maxDamage) {
 
 			this.name = name;
+			this.modname = modname;
 			this.rarity = rarity;
 			this.maxDamage = maxDamage;
 		}
@@ -47,12 +48,14 @@ public abstract class ItemBase extends Item implements IInitializer {
 		public ItemEntry(String modname, String name, int rarity) {
 
 			this.name = name;
+			this.modname = modname;
 			this.rarity = rarity;
 		}
 
 		public ItemEntry(String modname, String name) {
 
 			this.name = name;
+			this.modname = modname;
 		}
 
 		public ItemEntry useAltName(boolean altName) {
@@ -68,11 +71,14 @@ public abstract class ItemBase extends Item implements IInitializer {
 	public boolean hasTextures = true;
 	public String modName = "cofh";
 
-	public ItemBase(@Nullable String modName) {
+	public ItemBase(@Nullable String modName) {this(modName, "itembase");}
+	public ItemBase(@Nullable String modName, String name) {
 
 		if (modName != null) {
 			this.modName = modName;
 		}
+		setUnlocalizedName(name);
+		setRegistryName(name);
 		setHasSubtypes(true);
 	}
 
@@ -82,32 +88,19 @@ public abstract class ItemBase extends Item implements IInitializer {
 		return this;
 	}
 
-	public ItemStack addItem(int number, ItemEntry entry, boolean register) {
+	public ItemStack addItem(int number, ItemEntry entry) {
 
 		if (itemMap.containsKey(Integer.valueOf(number))) {
 			return null;
 		}
 		itemMap.put(Integer.valueOf(number), entry);
 		itemList.add(Integer.valueOf(number));
-		if (register) {
-			GameRegistry.register(this, new ResourceLocation(entry.name));
-		}
 		return new ItemStack(this, 1, number);
-	}
-
-	public ItemStack addItem(int number, ItemEntry entry) {
-
-		return addItem(number, entry, true);
-	}
-
-	public ItemStack addItem(int number, String modname, String name, int rarity, boolean register) {
-
-		return addItem(number, new ItemEntry(modname, name, rarity), register);
 	}
 
 	public ItemStack addItem(int number, String modname, String name, int rarity) {
 
-		return addItem(number, modname, name, rarity, true);
+		return addItem(number, new ItemEntry(modname, name, rarity));
 	}
 
 	public ItemStack addItem(int number, String modname, String name) {
@@ -117,7 +110,7 @@ public abstract class ItemBase extends Item implements IInitializer {
 
 	public ItemStack addOreDictItem(int number, String modname, String name, int rarity) {
 		addItem(number, modname, name, rarity);
-		ItemStack stack = new ItemStack(this, 0, number);
+		ItemStack stack = new ItemStack(this, 1, number);
 		OreDictionary.registerOre(name, stack);
 
 		return stack;
@@ -126,7 +119,7 @@ public abstract class ItemBase extends Item implements IInitializer {
 	public ItemStack addOreDictItem(int number, String modname, String name) {
 
 		addItem(number, modname, name);
-		ItemStack stack =  new ItemStack(this, 0, number);
+		ItemStack stack =  new ItemStack(this, 1, number);
 		OreDictionary.registerOre(name, stack);
 
 		return stack;
@@ -151,9 +144,8 @@ public abstract class ItemBase extends Item implements IInitializer {
 		return EnumRarity.values()[itemMap.get(stack.getItemDamage()).rarity];
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void getSubItems(Item item, CreativeTabs tab, List list) {
+	public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> list) {
 
 		for (int i = 0; i < itemList.size(); i++) {
 			list.add(new ItemStack(item, 1, itemList.get(i)));
@@ -170,9 +162,9 @@ public abstract class ItemBase extends Item implements IInitializer {
 		ItemEntry item = itemMap.get(i);
 
 		if (item.altName) {
-			return new StringBuilder().append(getUnlocalizedName()).append(item.name).append("Alt").toString();
+			return new StringBuilder().append(getUnlocalizedName().substring(0, getUnlocalizedName().indexOf(":") + 1)).append(item.name).append("Alt").toString();
 		}
-		return new StringBuilder().append("item.").append(getUnlocalizedName()).append(item.name).toString();
+		return new StringBuilder().append(getUnlocalizedName().substring(0, getUnlocalizedName().indexOf(":") + 1)).append(item.name).toString();
 	}
 
 	@Override
@@ -193,10 +185,7 @@ public abstract class ItemBase extends Item implements IInitializer {
 
 	@Override
 	public Item setUnlocalizedName(String name) {
-
-		GameRegistry.register(this);
-		name = modName + ":" + name;
-		return super.setUnlocalizedName(name);
+		return super.setUnlocalizedName(modName + ":" + name);
 	}
 
 	@Override
@@ -205,11 +194,25 @@ public abstract class ItemBase extends Item implements IInitializer {
 
 		return CoFHFontRenderer.loadFontRendererStack(stack);
 	}
+	
+	@Override
+	public boolean preInit()
+	{
+		GameRegistry.register(this);
+		return true;
+	}
+	
 	@Override
 	public boolean initialize() {
 		for (int i = 0; i < itemMap.size(); i++) {
 			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, i, new ModelResourceLocation(this.getUnlocalizedName(new ItemStack(this, 1, i)).substring(5), "inventory"));
 		}
+		return true;
+	}
+
+	@Override
+	public boolean postInit()
+	{
 		return true;
 	}
 

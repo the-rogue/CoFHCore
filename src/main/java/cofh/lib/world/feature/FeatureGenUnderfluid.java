@@ -7,6 +7,8 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.pattern.BlockMatcher;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
@@ -86,7 +88,7 @@ public class FeatureGenUnderfluid extends FeatureBase {
 					}
 				}
 				for (WeightedRandomBlock mat : matList) {
-					if (block.isReplaceableOreGen(mat.block.getStateFromMeta(mat.metadata), world, new BlockPos(x, y, z), null)) {
+					if (block.isReplaceableOreGen(mat.block.getStateFromMeta(mat.metadata), world, new BlockPos(x, y, z), BlockMatcher.forBlock(Blocks.STONE))) {
 						break l;
 					}
 				}

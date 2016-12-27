@@ -13,12 +13,14 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import cofh.api.core.IInitializer;
 import cofh.lib.render.particle.ParticleDrip;
 import cofh.lib.util.helpers.StringHelper;
 
-public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
+public abstract class BlockFluidCoFHBase extends BlockFluidClassic implements IInitializer {
 
 	String name = "";
 	String modName = "cofh";
@@ -33,6 +35,7 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 		this.name = StringHelper.titleCase(name);
 		
 		setUnlocalizedName(modName + ":fluid" + name);
+		setRegistryName("fluid" + name);
 		displacements.put(this, false);
 	}
 
@@ -44,6 +47,7 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 		this.modName = modName;
 		
 		setUnlocalizedName(modName + ":fluid" + name);
+		setRegistryName("fluid" + name);
 		displacements.put(this, false);
 	}
 
@@ -73,7 +77,21 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic {
 		return false;
 	}
 
+	@Override
 	public boolean preInit() {
+
+		GameRegistry.register(this);
+		return true;
+	}
+	
+	@Override
+	public boolean initialize() {
+		
+		return true;
+	}
+	
+	@Override
+	public boolean postInit() {
 
 		return true;
 	}

@@ -169,10 +169,10 @@ public abstract class ElementBase
 
 		VertexBuffer vertexbuffer = Tessellator.getInstance().getBuffer();
 		vertexbuffer.begin(7,vertexbuffer.getVertexFormat());
-		vertexbuffer.putPosition(xStart, yEnd, 0);
-		vertexbuffer.putPosition(xEnd, yEnd, 0);
-		vertexbuffer.putPosition(xEnd, yStart, 0);
-		vertexbuffer.putPosition(xStart, yStart, 0);
+		vertexbuffer.pos(xStart, yEnd, 0).endVertex();
+		vertexbuffer.pos(xEnd, yEnd, 0).endVertex();
+		vertexbuffer.pos(xEnd, yStart, 0).endVertex();
+		vertexbuffer.pos(xStart, yStart, 0).endVertex();
 		Tessellator.getInstance().draw();
 
 		glEnable(GL_TEXTURE_2D);

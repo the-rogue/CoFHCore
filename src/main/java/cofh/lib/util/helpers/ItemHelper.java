@@ -18,7 +18,6 @@ import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.FluidContainerRegistry;
@@ -847,7 +846,6 @@ public final class ItemHelper {
 	public static void registerWithHandlers(String oreName, ItemStack stack) {
 
 		OreDictionary.registerOre(oreName, stack);
-		GameRegistry.register(stack.getItem(), new ResourceLocation(oreName));
 		FMLInterModComms.sendMessage("ForgeMicroblock", "microMaterial", stack);
 	}
 

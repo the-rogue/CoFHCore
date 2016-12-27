@@ -190,7 +190,6 @@ public class ProxyClient extends Proxy {
 
 	@Override
 	public int getKeyBind(String key) {
-
 		if (key.equalsIgnoreCase("cofh.empower")) {
 			return KEYBINDING_EMPOWER.getKeyCode();
 		} else if (key.equalsIgnoreCase("cofh.multimode")) {

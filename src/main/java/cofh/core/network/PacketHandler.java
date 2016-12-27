@@ -2,6 +2,7 @@ package cofh.core.network;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
@@ -74,7 +75,7 @@ public class PacketHandler extends MessageToMessageCodec<FMLProxyPacket, PacketB
 		byte discriminator = (byte) this.packets.indexOf(packetClass);
 		buffer.writeByte(discriminator);
 		msg.encodeInto(ctx, buffer);
-		FMLProxyPacket proxyPacket = new FMLProxyPacket((PacketBuffer) buffer.copy(), ctx.channel().attr(NetworkRegistry.FML_CHANNEL).get());
+		FMLProxyPacket proxyPacket = new FMLProxyPacket(new PacketBuffer(buffer.copy()), ctx.channel().attr(NetworkRegistry.FML_CHANNEL).get());
 		out.add(proxyPacket);
 	}
 
@@ -146,38 +147,36 @@ public class PacketHandler extends MessageToMessageCodec<FMLProxyPacket, PacketB
 	public static void sendToAll(PacketBase message) {
 
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALL);
-		instance.channels.get(Side.SERVER).writeAndFlush(message);
+		instance.channels.get(Side.SERVER).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static void sendTo(PacketBase message, EntityPlayerMP player) {
 
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.PLAYER);
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(player);
-		instance.channels.get(Side.SERVER).writeAndFlush(message);
+		instance.channels.get(Side.SERVER).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static void sendTo(PacketBase message, EntityPlayer player) {
 
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.PLAYER);
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(player);
-		instance.channels.get(Side.SERVER).writeAndFlush(message);
+		instance.channels.get(Side.SERVER).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static void sendToAllAround(PacketBase message, NetworkRegistry.TargetPoint point) {
 
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALLAROUNDPOINT);
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(point);
-		instance.channels.get(Side.SERVER).writeAndFlush(message);
+		instance.channels.get(Side.SERVER).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static void sendToAllAround(PacketBase message, TileEntity theTile) {
 
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALLAROUNDPOINT);
-		instance.channels
-				.get(Side.SERVER)
-				.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS)
+		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS)
 				.set(new TargetPoint(theTile.getWorld().provider.getDimension(), theTile.getPos().getX(), theTile.getPos().getY(), theTile.getPos().getZ(), CoFHProps.NETWORK_UPDATE_RANGE));
-		instance.channels.get(Side.SERVER).writeAndFlush(message);
+		instance.channels.get(Side.SERVER).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static void sendToAllAround(PacketBase message, World world, int x, int y, int z) {
@@ -185,20 +184,19 @@ public class PacketHandler extends MessageToMessageCodec<FMLProxyPacket, PacketB
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.ALLAROUNDPOINT);
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS)
 				.set(new TargetPoint(world.provider.getDimension(), x, y, z, CoFHProps.NETWORK_UPDATE_RANGE));
-		instance.channels.get(Side.SERVER).writeAndFlush(message);
+		instance.channels.get(Side.SERVER).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static void sendToDimension(PacketBase message, int dimensionId) {
 
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.DIMENSION);
 		instance.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(dimensionId);
-		instance.channels.get(Side.SERVER).writeAndFlush(message);
+		instance.channels.get(Side.SERVER).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static void sendToServer(PacketBase message) {
-
 		instance.channels.get(Side.CLIENT).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.TOSERVER);
-		instance.channels.get(Side.CLIENT).writeAndFlush(message);
+		instance.channels.get(Side.CLIENT).writeAndFlush(message).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 	}
 
 	public static Packet<?> toMCPacket(PacketBase packet) {
