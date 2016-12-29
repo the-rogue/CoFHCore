@@ -6,10 +6,13 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.entity.EntityLiving.SpawnPlacementType;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -18,32 +21,37 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import cofh.api.core.IInitializer;
 import cofh.lib.render.particle.ParticleDrip;
-import cofh.lib.util.helpers.StringHelper;
+import cofh.lib.util.CustomStateMapper;
 
+/**
+ * Required a blockstate file for all textures of BlockFluidCoFHBase's that extend this named fluid_block.json structured like this:
+ * 	"variants": {
+		"BlockFluidCoFHBaseName1": [{
+			"custom": { "fluid": "fluid1name" }
+		}],
+		"BlockFluidCoFHBaseName2": [{
+			"custom": { "fluid": "fluid2name" }
+		}]
+	}
+ */
 public abstract class BlockFluidCoFHBase extends BlockFluidClassic implements IInitializer {
 
-	String name = "";
-	String modName = "cofh";
+	protected final String name;
+	protected final String modName;
 	protected float particleRed = 1.0F;
 	protected float particleGreen = 1.0F;
 	protected float particleBlue = 1.0F;
 	protected boolean shouldDisplaceFluids = false;
 
 	public BlockFluidCoFHBase(Fluid fluid, Material material, String name) {
-
-		super(fluid, material);
-		this.name = StringHelper.titleCase(name);
-		
-		setUnlocalizedName(modName + ":fluid" + name);
-		setRegistryName("fluid" + name);
-		displacements.put(this, false);
+		this("cofh", fluid, material, name);
 	}
 
 	public BlockFluidCoFHBase(String modName, Fluid fluid, Material material, String name) {
-
+		
 		super(fluid, material);
 
-		this.name = StringHelper.titleCase(name);
+		this.name = name;
 		this.modName = modName;
 		
 		setUnlocalizedName(modName + ":fluid" + name);
@@ -81,6 +89,12 @@ public abstract class BlockFluidCoFHBase extends BlockFluidClassic implements II
 	public boolean preInit() {
 
 		GameRegistry.register(this);
+		GameRegistry.register(new ItemBlock(this).setRegistryName(this.getRegistryName()));
+		
+		CustomStateMapper mapper = new CustomStateMapper(this.modName, "fluid_block", this.name);
+		ModelLoader.registerItemVariants(Item.getItemFromBlock(this));
+		ModelLoader.setCustomMeshDefinition(Item.getItemFromBlock(this), mapper);
+		ModelLoader.setCustomStateMapper(this, mapper);
 		return true;
 	}
 	

@@ -1,31 +1,40 @@
 package cofh.core.item.tool;
 
+import java.util.Locale;
 import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import cofh.CoFHCore;
 import cofh.lib.util.helpers.BlockHelper;
 
 public class ItemHammerAdv extends ItemToolAdv {
-
-	public ItemHammerAdv(ToolMaterial toolMaterial, String modid, String name) {
+	
+	protected String modname;
+	protected String name;
+	
+	public ItemHammerAdv(ToolMaterial toolMaterial, String modname, String name) {
 
 		super(4.0F, 4.0F, toolMaterial);
 		addToolClass("pickaxe");
 		addToolClass("hammer");
-		setUnlocalizedName(modid + ":" + name);
+		this.modname = modname;
+		this.name = name;
+		setUnlocalizedName(modname + ":" + name);
 		setRegistryName(name);
 
 		effectiveBlocks.addAll(new ItemPickaxeFake().geteffectiveblocks());
@@ -110,12 +119,20 @@ public class ItemHammerAdv extends ItemToolAdv {
 	public boolean preInit()
 	{
 		GameRegistry.register(this);
+		String shortName = name.substring(name.indexOf(".") + 1);
+		String material = shortName.substring(0, shortName.indexOf("."));
+		String type = shortName.substring(shortName.indexOf(".") + 1);
+		ModelBakery.registerItemVariants(this, new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type));
 		return true;
 	}
 	
 	@Override
 	public boolean initialize() {
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		String shortName = name.substring(name.indexOf(".") + 1);
+		String material = shortName.substring(0, shortName.indexOf("."));
+		String type = shortName.substring(shortName.indexOf(".") + 1);
+		CoFHCore.log.info(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type));
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type), "inventory"));
 		return true;
 	}
 	

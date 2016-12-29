@@ -2,8 +2,10 @@ package cofh.core.item.tool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,25 +16,32 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import cofh.CoFHCore;
 import cofh.api.core.IInitializer;
 import cofh.core.entity.EntityCoFHFishHook;
 import cofh.lib.util.helpers.ItemHelper;
 
 public class ItemFishingRodAdv extends ItemFishingRod implements IInitializer {
-
+	
+	protected String modname;
+	protected String name;
+	
 	public ArrayList<String> repairIngot = new ArrayList<String>();
 	protected ToolMaterial toolMaterial;
 	protected boolean showInCreative = true;
 	protected int luckModifier = 0;
 	protected int speedModifier = 0;
 
-	public ItemFishingRodAdv(ToolMaterial toolMaterial, String modid, String name) {
+	public ItemFishingRodAdv(ToolMaterial toolMaterial, String modname, String name) {
 
 		this.toolMaterial = toolMaterial;
-		setUnlocalizedName(modid + ":" + name);
+		this.modname = modname;
+		this.name = name;
+		setUnlocalizedName(modname + ":" + name);
 		setRegistryName(name);
 		this.setMaxDamage(toolMaterial.getMaxUses());
 	}
@@ -117,12 +126,20 @@ public class ItemFishingRodAdv extends ItemFishingRod implements IInitializer {
 	public boolean preInit()
 	{
 		GameRegistry.register(this);
+		String shortName = name.substring(name.indexOf(".") + 1);
+		String material = shortName.substring(0, shortName.indexOf("."));
+		String type = shortName.substring(shortName.indexOf(".") + 1);
+		ModelBakery.registerItemVariants(this, new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type));
 		return true;
 	}
 	
 	@Override
 	public boolean initialize() {
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		String shortName = name.substring(name.indexOf(".") + 1);
+		String material = shortName.substring(0, shortName.indexOf("."));
+		String type = shortName.substring(shortName.indexOf(".") + 1);
+		CoFHCore.log.info(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type));
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type), "inventory"));
 		return true;
 	}
 

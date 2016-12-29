@@ -36,7 +36,7 @@ public class UpdateCheckThread extends Thread {
 		super("CoFHUpdater:" + mod.getModId());
 		_mod = mod;
 		if (releaseUrl == null) {
-			releaseUrl = "https://raw.github.com/skyboy/" + mod.getModId() + "/master/VERSION";
+			releaseUrl = "https://raw.github.com/skyboy/" + mod.getModName() + "/master/VERSION";
 		}
 		_releaseUrl = releaseUrl;
 		_downloadUrl = downloadUrl;

@@ -2,8 +2,10 @@ package cofh.core.item;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
@@ -11,7 +13,9 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import cofh.CoFHCore;
 import cofh.api.core.IInitializer;
 import cofh.lib.util.helpers.ItemHelper;
 
@@ -23,10 +27,15 @@ public class ItemArmorAdv extends ItemArmor implements IInitializer {
 	public String repairIngot = "";
 	protected Multimap<String, AttributeModifier> properties = HashMultimap.create();
 	protected boolean showInCreative = true;
-
+	protected String modname;
+	protected String name;
+	
+	//Names should be in the format armour.material.type
 	public ItemArmorAdv(ArmorMaterial material, EntityEquipmentSlot equipmentSlot, String modname, String name) {
 
 		super(material, 0, equipmentSlot);
+		this.modname = modname;
+		this.name = name;
 		setUnlocalizedName(modname + ":" + name);
 		setRegistryName(name);
 	}
@@ -82,12 +91,20 @@ public class ItemArmorAdv extends ItemArmor implements IInitializer {
 	public boolean preInit()
 	{
 		GameRegistry.register(this);
+		String shortName = name.substring(name.indexOf(".") + 1);
+		String material = shortName.substring(0, shortName.indexOf("."));
+		String type = shortName.substring(shortName.indexOf(".") + 1);
+		ModelBakery.registerItemVariants(this, new ResourceLocation(modname, "armor/" + material.toLowerCase(Locale.US) + "/" + material + type));
 		return true;
 	}
 	
 	@Override
 	public boolean initialize() {
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(this.getUnlocalizedName().substring(5), "inventory"));
+		String shortName = name.substring(name.indexOf(".") + 1);
+		String material = shortName.substring(0, shortName.indexOf("."));
+		String type = shortName.substring(shortName.indexOf(".") + 1);
+		CoFHCore.log.info(new ResourceLocation(modname, "armor/" + material.toLowerCase(Locale.US) + "/" + material + type));
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(new ResourceLocation(modname, "armor/" + material.toLowerCase(Locale.US) + "/" + material + type), "inventory"));
 		return true;
 	}
 

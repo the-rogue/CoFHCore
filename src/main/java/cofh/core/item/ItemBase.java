@@ -10,6 +10,8 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.ItemMeshDefinition;
+import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -17,6 +19,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -33,6 +36,13 @@ public class ItemBase extends Item implements IInitializer {
 
 		public String name;
 		public String modname;
+		public ItemMeshDefinition mapper = new ItemMeshDefinition() {
+			@Override
+			public ModelResourceLocation getModelLocation(ItemStack stack)
+			{
+				return new ModelResourceLocation(ItemBase.this.modName + ":" + ItemBase.this.name + "/" + name, "inventory");
+			}
+		};
 		public int rarity = 0;
 		public int maxDamage = 0;
 		public boolean altName = false;
@@ -70,16 +80,20 @@ public class ItemBase extends Item implements IInitializer {
 
 	public boolean hasTextures = true;
 	public String modName = "cofh";
+	public String name = "";
 
+	//Constructor must be called in preinit
 	public ItemBase(@Nullable String modName) {this(modName, "itembase");}
 	public ItemBase(@Nullable String modName, String name) {
 
 		if (modName != null) {
 			this.modName = modName;
 		}
+		this.name = name;
 		setUnlocalizedName(name);
 		setRegistryName(name);
 		setHasSubtypes(true);
+		GameRegistry.register(this);
 	}
 
 	public ItemBase setHasTextures(boolean hasTextures) {
@@ -198,14 +212,17 @@ public class ItemBase extends Item implements IInitializer {
 	@Override
 	public boolean preInit()
 	{
-		GameRegistry.register(this);
+		for (int i : itemList) {
+			ModelBakery.registerItemVariants(this, new ResourceLocation(modName, name + "/" + itemMap.get(i).name));
+		} 
 		return true;
 	}
 	
 	@Override
-	public boolean initialize() {
-		for (int i = 0; i < itemMap.size(); i++) {
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, i, new ModelResourceLocation(this.getUnlocalizedName(new ItemStack(this, 1, i)).substring(5), "inventory"));
+	public boolean initialize() 
+	{
+		for (int i : itemList) {
+			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, i, new ModelResourceLocation(new ResourceLocation(modName, name + "/" + itemMap.get(i).name), "inventory"));
 		}
 		return true;
 	}

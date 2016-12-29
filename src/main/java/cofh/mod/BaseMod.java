@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -47,21 +46,22 @@ public abstract class BaseMod implements IUpdatableMod {
 
 	protected File _configFolder;
 	protected final String _modid;
+	protected final String _modname;
 	protected final Logger _log;
 
 	protected BaseMod(Logger log) {
 
-		String name = getModId();
-		_modid = name.toLowerCase(Locale.US);
+		_modname = getModName();
+		_modid = getModId();
 		_log = log;
 		init();
 	}
 
 	protected BaseMod() {
 
-		String name = getModId();
-		_modid = name.toLowerCase(Locale.US);
-		_log = LogManager.getLogger(name);
+		_modname = getModName();
+		_modid = getModId();
+		_log = LogManager.getLogger(_modid);
 		init();
 	}
 
