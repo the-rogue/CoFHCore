@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
@@ -25,7 +24,6 @@ public final class RenderHelper {
 
 	public static final double RENDER_OFFSET = 1.0D / 1024.0D;
 	public static final ResourceLocation MC_BLOCK_SHEET = new ResourceLocation("textures/atlas/blocks.png");
-	public static final ResourceLocation MC_ITEM_SHEET = new ResourceLocation("textures/atlas/items.png");
 	public static final ResourceLocation MC_FONT_DEFAULT = new ResourceLocation("textures/font/ascii.png");
 	public static final ResourceLocation MC_FONT_ALTERNATE = new ResourceLocation("textures/font/ascii_sga.png");
 	public static final ResourceLocation MC_ITEM_GLINT = new ResourceLocation("textures/misc/enchanted_item_glint.png");
@@ -179,12 +177,15 @@ public final class RenderHelper {
 
 	public static final void bindItemTexture(ItemStack stack) {
 
-		engine().bindTexture(stack.getItem() instanceof ItemBlock ? MC_BLOCK_SHEET : MC_ITEM_SHEET);
+		engine().bindTexture(MC_BLOCK_SHEET);
 	}
 
 	public static final void bindTexture(ResourceLocation texture) {
 
 		engine().bindTexture(texture);
+	}
+	public static final void bindIconTexture(ResourceLocation texture) {
+		engine().bindTexture(new ResourceLocation(texture.getResourceDomain(), "textures/" + texture.getResourcePath() + ".png"));
 	}
 
 	public static final void setBlockTextureSheet() {
@@ -192,10 +193,6 @@ public final class RenderHelper {
 		bindTexture(MC_BLOCK_SHEET);
 	}
 
-	public static final void setItemTextureSheet() {
-
-		bindTexture(MC_ITEM_SHEET);
-	}
 
 	public static final void setDefaultFontTextureSheet() {
 

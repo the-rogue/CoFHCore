@@ -34,6 +34,7 @@ public abstract class TabScrolledText extends TabBase {
 	@Override
 	protected void drawForeground() {
 
+		super.drawForeground();
 		drawTabIcon(getIcon());
 		if (!isFullyOpened()) {
 			return;
@@ -52,6 +53,7 @@ public abstract class TabScrolledText extends TabBase {
 		for (int i = firstLine; i < firstLine + numLines; i++) {
 			getFontRenderer().drawString(myText.get(i), posXOffset() + 2, posY + 20 + (i - firstLine) * getFontRenderer().FONT_HEIGHT, textColor);
 		}
+		
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 	}
 

@@ -3,7 +3,6 @@ package cofh.core.item.tool;
 import java.util.Locale;
 import java.util.Set;
 
-import cofh.CoFHCore;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -54,7 +53,6 @@ public class ItemPickaxeAdv extends ItemToolAdv {
 		String shortName = name.substring(name.indexOf(".") + 1);
 		String material = shortName.substring(0, shortName.indexOf("."));
 		String type = shortName.substring(shortName.indexOf(".") + 1);
-		CoFHCore.log.info(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type));
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type), "inventory"));
 		return true;
 	}

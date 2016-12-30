@@ -1,11 +1,13 @@
 package cofh.core;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderArrow;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.settings.KeyBinding;
@@ -51,7 +53,8 @@ public class ProxyClient extends Proxy {
 
 	public static CoFHFontRenderer fontRenderer;
 	
-	public static TextureMap map;
+	private static TextureMap map;
+	public static final ArrayList<TextureAtlasSprite> ICONS = new ArrayList<TextureAtlasSprite>();
 
 	public static final KeyBind KEYBINDING_EMPOWER = new KeyBind("key.cofh.empower", Keyboard.KEY_V, "key.cofh.category");
 	public static final KeyBind KEYBINDING_MULTIMODE = new KeyBind("key.cofh.multimode", Keyboard.KEY_C, "key.cofh.category");
@@ -216,32 +219,33 @@ public class ProxyClient extends Proxy {
 	@SubscribeEvent
 	public void registerIcons(TextureStitchEvent.Pre event) {
 		map = event.getMap();
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Friends"));		//"IconAccessFriends"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Guild"));		//"IconAccessGuild"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Private"));		//"IconAccessPrivate"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Public"));		//"IconAccessPublic"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Accept"));				//"IconAccept"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Accept_Inactive"));	//"IconAcceptInactive"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Augment"));			//"IconAugment"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Button"));				//"IconButton"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Button_Highlight"));	//"IconButtonHighlight"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Button_Inactive"));	//"IconButtonInactive"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Cancel"));				//"IconCancel"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Cancel_Inactive"));	//"IconCancelInactive"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Config"));				//"IconConfig"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Energy"));				//"IconEnergy"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Nope"));				//"IconNope"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Information"));		//"IconInformation"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_Tutorial"));			//"IconTutorial"
-		map.registerSprite(new ResourceLocation("minecraft:items/gunpowder"));			//"IconGunpowder"
-		map.registerSprite(new ResourceLocation("minecraft:items/redstone_dust"));		//"IconRedstone"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_RSTorchOff"));			//"IconRSTorchOff"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_RSTorchOn"));			//"IconRSTorchOn"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Friends")));		//"IconAccessFriends"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Guild")));		//"IconAccessGuild"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Private")));		//"IconAccessPrivate"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Access_Public")));		//"IconAccessPublic"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Accept")));				//"IconAccept"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Accept_Inactive")));	//"IconAcceptInactive"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Augment")));			//"IconAugment"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Button")));				//"IconButton"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Button_Highlight")));	//"IconButtonHighlight"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Button_Inactive")));	//"IconButtonInactive"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Cancel")));				//"IconCancel"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Cancel_Inactive")));	//"IconCancelInactive"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Config")));				//"IconConfig"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Energy")));				//"IconEnergy"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Nope")));				//"IconNope"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Information")));		//"IconInformation"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_Tutorial")));			//"IconTutorial"
+		ICONS.add(map.registerSprite(new ResourceLocation("minecraft:items/gunpowder")));			//"IconGunpowder"
+		ICONS.add(map.registerSprite(new ResourceLocation("minecraft:items/redstone_dust")));		//"IconRedstone"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_RSTorchOff")));			//"IconRSTorchOff"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_RSTorchOn")));			//"IconRSTorchOn"
 		
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowDown_Inactive"));	//"IconArrowDown0"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowDown"));			//"IconArrowDown1"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowUp_Inactive"));	//"IconArrowUp0"
-		map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowUp"));			//"IconArrowUp1"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowDown_Inactive")));	//"IconArrowDown0"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowDown")));			//"IconArrowDown1"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowUp_Inactive")));	//"IconArrowUp0"
+		ICONS.add(map.registerSprite(new ResourceLocation("cofh:icons/Icon_ArrowUp")));				//"IconArrowUp1"
+		
 	}
 
 	@SubscribeEvent

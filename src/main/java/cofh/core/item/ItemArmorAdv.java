@@ -15,7 +15,6 @@ import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import cofh.CoFHCore;
 import cofh.api.core.IInitializer;
 import cofh.lib.util.helpers.ItemHelper;
 
@@ -103,7 +102,6 @@ public class ItemArmorAdv extends ItemArmor implements IInitializer {
 		String shortName = name.substring(name.indexOf(".") + 1);
 		String material = shortName.substring(0, shortName.indexOf("."));
 		String type = shortName.substring(shortName.indexOf(".") + 1);
-		CoFHCore.log.info(new ResourceLocation(modname, "armor/" + material.toLowerCase(Locale.US) + "/" + material + type));
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(new ResourceLocation(modname, "armor/" + material.toLowerCase(Locale.US) + "/" + material + type), "inventory"));
 		return true;
 	}

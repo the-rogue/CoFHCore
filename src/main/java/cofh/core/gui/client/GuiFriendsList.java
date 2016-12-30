@@ -167,6 +167,7 @@ public class GuiFriendsList extends GuiBaseAdv {
 	@Override
 	public void updateScreen() {
 
+		super.updateScreen();
 		tbName.updateCursorCounter();
 	}
 

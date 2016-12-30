@@ -21,7 +21,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import cofh.CoFHCore;
 import cofh.core.util.CoreUtils;
 
 public class ItemSickleAdv extends ItemToolAdv {
@@ -110,7 +109,7 @@ public class ItemSickleAdv extends ItemToolAdv {
 				if (block.equals(Blocks.VINE)) {
 					CoreUtils.dropItemStackIntoWorldWithVelocity(new ItemStack(Blocks.VINE), world, pos.getX(), pos.getY(), pos.getZ());
 				}
-				if (xp == 0) {
+				if (xp != 0) {
 					block.dropXpOnBlockBreak(world, pos, xp);
 				}
 			}
@@ -145,11 +144,32 @@ public class ItemSickleAdv extends ItemToolAdv {
 
 		world.playEvent(player, 2001, pos, Block.getIdFromBlock(blockstate.getBlock()) | (blockstate.getBlock().getMetaFromState(blockstate) << 12));
 
-		for (int i = pos.getX() - radius; i <= pos.getX() + radius; i++) {
-			for (int k = pos.getZ() - radius; k <= pos.getZ() + radius; k++) {
-				used |= harvestBlock(world, new BlockPos(i, pos.getZ(), k), player);
+		Material material = blockstate.getMaterial();
+		if (material == Material.PLANTS) {
+			for (int i = pos.getX() - radius; i <= pos.getX() + radius; i++) {
+				for (int k = pos.getZ() - radius; k <= pos.getZ() + radius; k++) {
+					used |= harvestBlock(world, new BlockPos(i, pos.getY(), k), player);
+				}
+			}
+		} else {
+			int shortradius = this.radius;
+			if (this.radius >= 3) {
+				shortradius = Math.round(this.radius / 2.0f);
+			}
+			if (this.radius >= 12) {
+				shortradius = (int) Math.ceil(this.radius / 3.0f);
+			}
+			
+			for (int i = pos.getX() - shortradius; i <= pos.getX() + shortradius; i++) {
+				for (int k = pos.getZ() - shortradius; k <= pos.getZ() + shortradius; k++) {
+					for (int j = pos.getY() - shortradius; j <= pos.getY() + shortradius; j++)
+						used |= harvestBlock(world, new BlockPos(i, j, k), player);
+				}
 			}
 		}
+			
+		
+
 		if (used && !player.capabilities.isCreativeMode) {
 			stack.damageItem(1, player);
 		}
@@ -172,7 +192,6 @@ public class ItemSickleAdv extends ItemToolAdv {
 		String shortName = name.substring(name.indexOf(".") + 1);
 		String material = shortName.substring(0, shortName.indexOf("."));
 		String type = shortName.substring(shortName.indexOf(".") + 1);
-		CoFHCore.log.info(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type));
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(this, 0, new ModelResourceLocation(new ResourceLocation(modname, "tool/" + material.toLowerCase(Locale.US) + "/" + material + type), "inventory"));
 		return true;
 	}

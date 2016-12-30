@@ -171,7 +171,7 @@ public class ElementListBox extends ElementBase {
 		glTranslated(-scrollHoriz, 0, 0);
 
 		int e = _elements.size();
-		while (nextElement < e && heightDrawn <= getContentHeight()) {
+		while (nextElement < e && heightDrawn <= getContentHeight() - _elements.get(nextElement).getHeight()) {
 			heightDrawn += drawElement(nextElement, getContentLeft(), getContentTop() + heightDrawn);
 			nextElement++;
 		}

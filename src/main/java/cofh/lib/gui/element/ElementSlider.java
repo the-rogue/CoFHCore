@@ -1,7 +1,6 @@
 package cofh.lib.gui.element;
 
 import static cofh.lib.gui.element.ElementButtonBase.*;
-
 import cofh.lib.gui.GuiBase;
 import cofh.lib.gui.GuiColor;
 

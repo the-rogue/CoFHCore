@@ -676,8 +676,7 @@ public abstract class GuiBase extends GuiContainer
 			{
 				drawWidth = Math.min(width - i, 16);
 				drawHeight = Math.min(height - j, 16);
-				RenderHelper.bindTexture(new ResourceLocation(icon.getIconName()));
-				drawTexturedModalRect(x + i, y + j, icon, drawWidth, drawHeight);
+				drawScaledTexturedModelRectFromIcon(x + i, y + j, icon, drawWidth, drawHeight);
 			}
 		}
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0F);
@@ -686,20 +685,19 @@ public abstract class GuiBase extends GuiContainer
 	public void drawIcon(TextureAtlasSprite icon, int x, int y, int spriteSheet)
 	{
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0F);
-		RenderHelper.bindTexture(new ResourceLocation(icon.getIconName()));
+		RenderHelper.setBlockTextureSheet();
 		drawTexturedModalRect(x, y, icon, 16, 16);
 	}
 
 	public void drawColorIcon(TextureAtlasSprite icon, int x, int y, int spriteSheet)
 	{
-		RenderHelper.bindTexture(new ResourceLocation(icon.getIconName()));
+		RenderHelper.setBlockTextureSheet();
 		drawTexturedModalRect(x, y, icon, 16, 16);
 	}
 
 	public void drawIcon(ResourceLocation iconName, int x, int y, int spriteSheet)
 	{
 		TextureAtlasSprite icon = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(iconName.toString());
-		RenderHelper.bindTexture(new ResourceLocation(icon.getIconName()));
 		drawIcon(icon, x, y, spriteSheet);
 	}
 
@@ -731,7 +729,7 @@ public abstract class GuiBase extends GuiContainer
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glColor4f(r, g, b, a);
-		worldrenderer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+		worldrenderer.begin(7, DefaultVertexFormats.POSITION);
 		worldrenderer.pos(x1, y2, this.zLevel).endVertex();
 		worldrenderer.pos(x2, y2, this.zLevel).endVertex();
 		worldrenderer.pos(x2, y1, this.zLevel).endVertex();
@@ -767,11 +765,11 @@ public abstract class GuiBase extends GuiContainer
 		VertexBuffer worldrenderer = tessellator.getBuffer();
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		GL11.glColor4f(r, g, b, a);
-		worldrenderer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-		worldrenderer.pos(x1, y2, this.zLevel);
-		worldrenderer.pos(x2, y2, this.zLevel);
-		worldrenderer.pos(x2, y1, this.zLevel);
-		worldrenderer.pos(x1, y1, this.zLevel);
+		worldrenderer.begin(7, DefaultVertexFormats.POSITION);
+		worldrenderer.pos(x1, y2, this.zLevel).endVertex();
+		worldrenderer.pos(x2, y2, this.zLevel).endVertex();
+		worldrenderer.pos(x2, y1, this.zLevel).endVertex();
+		worldrenderer.pos(x1, y1, this.zLevel).endVertex();
 		tessellator.draw();
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
@@ -783,11 +781,11 @@ public abstract class GuiBase extends GuiContainer
 		float texV = 1 / texH;
 		Tessellator tessellator = Tessellator.getInstance();
 		VertexBuffer worldrenderer = tessellator.getBuffer();
-		worldrenderer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-		worldrenderer.pos(x + 0, y + height, this.zLevel).tex((u + 0) * texU, (v + height) * texV);
-		worldrenderer.pos(x + width, y + height, this.zLevel).tex((u + width) * texU, (v + height) * texV);
-		worldrenderer.pos(x + width, y + 0, this.zLevel).tex((u + width) * texU, (v + 0) * texV);
-		worldrenderer.pos(x + 0, y + 0, this.zLevel).tex((u + 0) * texU, (v + 0) * texV);
+		worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		worldrenderer.pos(x + 0, y + height, this.zLevel).tex((u + 0) * texU, (v + height) * texV).endVertex();
+		worldrenderer.pos(x + width, y + height, this.zLevel).tex((u + width) * texU, (v + height) * texV).endVertex();
+		worldrenderer.pos(x + width, y + 0, this.zLevel).tex((u + width) * texU, (v + 0) * texV).endVertex();
+		worldrenderer.pos(x + 0, y + 0, this.zLevel).tex((u + 0) * texU, (v + 0) * texV).endVertex();
 		tessellator.draw();
 	}
 
@@ -797,7 +795,7 @@ public abstract class GuiBase extends GuiContainer
 		{
 			return;
 		}
-		RenderHelper.bindTexture(new ResourceLocation(icon.getIconName()));
+		RenderHelper.bindIconTexture(new ResourceLocation(icon.getIconName()));
 		double minU = icon.getMinU();
 		double maxU = icon.getMaxU();
 		double minV = icon.getMinV();
@@ -805,11 +803,11 @@ public abstract class GuiBase extends GuiContainer
 
 		Tessellator tessellator = Tessellator.getInstance();
 		VertexBuffer worldrenderer = tessellator.getBuffer();
-		worldrenderer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-		worldrenderer.pos(x + 0, y + height, this.zLevel).tex(minU, minV + (maxV - minV) * height / 16F);
-		worldrenderer.pos(x + width, y + height, this.zLevel).tex(minU + (maxU - minU) * width / 16F, minV + (maxV - minV) * height / 16F);
-		worldrenderer.pos(x + width, y + 0, this.zLevel).tex(minU + (maxU - minU) * width / 16F, minV);
-		worldrenderer.pos(x + 0, y + 0, this.zLevel).tex(minU, minV);
+		worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+		worldrenderer.pos(x + 0, y + height, this.zLevel).tex(minU, minV + (maxV - minV) * height / 16F).endVertex();
+		worldrenderer.pos(x + width, y + height, this.zLevel).tex(minU + (maxU - minU) * width / 16F, minV + (maxV - minV) * height / 16F).endVertex();
+		worldrenderer.pos(x + width, y + 0, this.zLevel).tex(minU + (maxU - minU) * width / 16F, minV).endVertex();
+		worldrenderer.pos(x + 0, y + 0, this.zLevel).tex(minU, minV).endVertex();
 		tessellator.draw();
 	}
 
