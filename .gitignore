@@ -22,7 +22,10 @@ logs/
 mods/
 resourcepacks/
 saves/
+config/
 /options.txt
+/usercache.json
+/usernamecache.json
 
 # External tool builders
 .externalToolBuilders/
